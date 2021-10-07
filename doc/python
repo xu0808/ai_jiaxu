@@ -1,0 +1,41 @@
+1、三目运算符
+1 if i%4 == 0 else 0
+
+2、反射机制
+count = __import__(imp)
+sum = count.my_sum(2, 3)
+
+3、使用raise抛出异常
+x = 10
+if x > 5:
+    raise Exception('x 不能大于 5。x 的值为: {}'.format(x))
+
+4、关键字参数动态表达
+    import datetime
+    from dateutil.relativedelta import relativedelta
+    today = datetime.date.today()
+     # 日、月、年
+    day = today - relativedelta(**{['days', 'months', 'years'][0]: 1})
+
+5、判断对象是否为string
+    print(isinstance('abc',str))
+
+
+7、pandas和pyspark互转dataframe
+# pandas转spark
+values = pandas_df.values.tolist()
+columns = pandas_df.columns.tolist()
+spark_df = spark.createDataFrame(values, columns)
+
+# spark转pandas
+pandas_df = spark_df.toPandas()
+spark和pandas的datafram
+
+
+
+8、rest api认证
+    # RESTful API开发中，Authentication（认证）机制的实现通常『非常必要』。
+    user_password = '%s:%s' % (es_user, es_psd)
+    b64_author = base64.b64encode(user_password.encode())
+    author = 'basic ' + b64_author.decode('utf-8')
+    headers = {'Content-Type': 'application/json', 'Authorization': author}

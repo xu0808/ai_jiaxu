@@ -1,0 +1,68 @@
+【base】
+1、word2vec
+https://www.jianshu.com/p/cede3ae146bb
+2、决策树
+https://blog.csdn.net/u012328159/article/details/70184415
+3、XgBoost算法
+https://www.cnblogs.com/wj-1314/p/9402324.html
+
+【Tensorflow 2.0】
+谷歌Tensorflow 2.0最全书籍、实战项目、代码、官方视频教程分享
+https://blog.csdn.net/lqfarmer/article/details/102369969
+【Transformer】
+https://blog.csdn.net/qq_28168421/article/details/109302062
+
+
+【Graph Embedding】
+1、Graph Embedding
+node2vec原理介绍及其spark实现
+https://zhuanlan.zhihu.com/p/122704411
+
+graph embedding 使用方法
+https://www.cnblogs.com/Allen-rg/p/11468573.html
+
+浅梦学习笔记 公众号文章汇总
+https://github.com/shenweichen/AlgoNotes
+https://github.com/shenweichen/GraphEmbedding
+https://github.com/stellargraph/stellargraph
+
+学习聚合函数 GraphSAGE
+https://blog.csdn.net/weixin_44413191/article/details/109008096
+
+
+【大厂实践】
+1、大规模图算法在京东广告的实践
+https://blog.csdn.net/rlnLo2pNEfx9c/article/details/117608234
+2、spark的图计算
+生产环境请关注api graphX https://spark.apache.org/graphx/
+Spark GraphX源码分析
+https://endymecy.gitbooks.io/spark-graphx-source-analysis/content/
+
+
+【horovod-分布式训练】
+分布式Horovod介绍
+https://blog.csdn.net/zwqjoy/article/details/89552432
+Volcano
+https://www.infoq.cn/article/GiPZTGirmCMtOzbwszVQ
+
+
+
+【rec】
+1、Youtube
+https://blog.csdn.net/dQCFKyQDXYm3F8rB0/article/details/86587032
+Youtube 和  Pinterest
+YouTube深度学习推荐
+https://blog.csdn.net/Tonywu2018/article/details/104297965
+
+2、其他
+推荐系统主流召回方法综述
+https://blog.csdn.net/fengdu78/article/details/107293838
+
+向量召回在躺平APP的实践
+https://blog.csdn.net/Taobaojishu/article/details/108744428
+
+推荐系统之EGES
+https://blog.csdn.net/weixin_35154281/article/details/117396048
+
+
+

@@ -1,0 +1,65 @@
+【GitHub】
+https://github.com  使用网易邮箱登录
+解决无法登陆问题：
+C:\Windows\System32\drivers\etc
+140.82.114.3 github.com
+199.232.69.194 github.global.ssl.fastly.net
+
+1、生成证书
+ssh-keygen -t rsa -C "haohaoqiankunxu@163.com"
+(使用默认证书名称，否则官网认证失败)
+
+2、注册公钥
+https://github.com/settings/keys
+
+3、证书访问验证
+ssh -T git@github.com
+
+4、个人仓库
+git@github.com:xu0808/rec.git
+
+5、GitHub中文社区
+https://www.githubs.cn/post/git-tutorial
+
+6、Github 简明教程
+https://www.runoob.com/w3cnote/git-guide.html
+
+【spark开发环境】
+一、java
+1、开发工具idea下载
+https://www.jetbrains.com/idea/download/#section=windows
+2、scala插件下载
+http://plugins.jetbrains.com/files/1347/43504/scala-intellij-bin-2018.1.3.zip?updateId=43504&pluginId=1347
+3、spark-2.2.1源码(http://spark.apache.org/downloads.html)
+https://www.apache.org/dyn/closer.lua/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz
+4 、本地环境运行问题
+1)Could not locate executablenull\bin\winutils.exe in the Hadoop binaries. 
+下载hadoop：https://codeload.github.com/amihalik/hadoop-common-2.6.0-bin/zip/master
+添加环境变量HADOOP_HOME：E:\soft\ide\hadoop-common-2.6.0-bin-master
+正常获取winutils.exe文件
+E:\soft\ide\hadoop-common-2.6.0-bin-master\bin\winutils.exe
+
+
+二、pySpark
+1、doc
+https://www.jianshu.com/p/233b91d869f8
+
+a、添加pySpark支持
+spark源码下D:\soft\dev\spark-2.3.3-bin-hadoop2.7\python\lib
+粘贴包py4j-0.10.7-src.zip和pyspark.zip包
+并解压至D:\workspace\python\demo\venv\Lib\site-packages
+
+b、验证安装效果
+输入import pyspark as ps不报错即表示成功
+
+2、spark 追加扩展包
+D:\soft\dev\spark-2.3.3-bin-hadoop2.7\jars
+
+
+
+【bug】
+1、Command line is too long
+<component name="PropertiesComponent">
+ -- 添加
+ <property name="dynamic.classpath" value="true" />
+</component>
