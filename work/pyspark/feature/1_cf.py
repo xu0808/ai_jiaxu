@@ -47,7 +47,7 @@ if __name__ == '__main__':
               ratingCol='rating', coldStartStrategy='drop')
     # 3-2、模型训练
     model = als.fit(train_df)
-    # # Evaluate the model by computing the RMSE on the test data
+    # # Evaluate the model by computing the RMSE on the test gat
     # 3-3、模型预测
     predicts = model.transform(test_df)
     predicts.show()

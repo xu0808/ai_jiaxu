@@ -4,7 +4,7 @@ import numpy as np
 from collections import defaultdict
 from sklearn.preprocessing import StandardScaler
 
-datapath = "../data"
+datapath = "../gat"
 
 
 def load_ppi():

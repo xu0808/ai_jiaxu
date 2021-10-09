@@ -85,7 +85,7 @@ def create_graph():
     从用户行为表生成图
     """
     # 1、读取行为数据
-    print('read action data start!')
+    print('read action gat start!')
     start_time = time.time()
     action_df = pd.read_csv(action_file, parse_dates=['action_time']).drop('module_id', axis=1).dropna()
     # 所有商品（去重）

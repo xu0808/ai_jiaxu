@@ -21,7 +21,7 @@ with tf.io.TFRecordWriter(train_tfrecord) as writer:
     for nzp in os.listdir(quick_draw_dir):
         if nzp.startswith('train_batch'):
             data = np.load(os.path.join(quick_draw_dir, nzp))
-            imgs = data['data'][:img_num]
+            imgs = data['gat'][:img_num]
             imgs = np.reshape(imgs, [-1, img_size, img_size])
             labels = data['labels'][:img_num].tolist()
 
@@ -40,7 +40,7 @@ with tf.io.TFRecordWriter(test_tfrecord) as writer:
     for nzp in os.listdir(quick_draw_dir):
         if nzp == 'test.npz':
             data = np.load(os.path.join(quick_draw_dir, nzp))
-            imgs = data['data'][:img_num]
+            imgs = data['gat'][:img_num]
             imgs = np.reshape(imgs, [-1, img_size, img_size])
             labels = data['labels'][:img_num].tolist()
 

@@ -74,7 +74,7 @@ def movie_seq(df_0):
     # 1、组内合并数组
     group_sql = 'select userId,collect_list(struct(timestamp,movieId)) array' \
                 ' from temp where rating >= 3.5 group by userId'
-    # rating data
+    # rating gat
     group_df = common.select(spark, df_0, group_sql)
     group_df.show(20, False)
 
@@ -82,7 +82,7 @@ def movie_seq(df_0):
     # sort_array 默认第一个字段升序排列
     # [1094785598, 924], [1094785621, 919], [1094785709, 337]
     sort_sql = 'select item_seq(sort_array(array)) item_seq from temp'
-    # rating data
+    # rating gat
     sort_df = common.select(spark, group_df, sort_sql)
     sort_df.show(20, False)
     return sort_df
@@ -133,7 +133,7 @@ def emb_lsh(emb_dict):
     result = bucket_model.transform(movie_emb_df)
     print("movieId, emb, bucketId schema:")
     result.printSchema()
-    print("movieId, emb, bucketId data result:")
+    print("movieId, emb, bucketId gat result:")
     result.show(10, truncate=False)
 
     # 4、近邻搜索top5

@@ -3,7 +3,7 @@
 import numpy as np
 from collections import defaultdict
 
-datapath = "../data"
+datapath = "../gat"
 
 def load_cora():
     num_nodes = 2708

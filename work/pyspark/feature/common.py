@@ -21,9 +21,9 @@ if is_local:
     data_dir = 'E:\\workspace\\rec_server\\src\\main\\resources\\webroot\\sampledata'
 
 if is_debug:
-    data_dir = '/data'
+    data_dir = '/gat'
 
-out_dir = os.path.join('/data', 'out')
+out_dir = os.path.join('/gat', 'out')
 
 
 def spark_init():

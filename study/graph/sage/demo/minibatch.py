@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This module computes minibatch (data and auxiliary matrices) for mean aggregator
+This module computes minibatch (gat and auxiliary matrices) for mean aggregator
 
 requirement: neigh_dict is a BIDIRECTIONAL adjacency matrix in dict
 """

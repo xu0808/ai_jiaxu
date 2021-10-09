@@ -57,11 +57,11 @@ def sample_mask(idx, l):
 
 
 def load_data_0():
-    """Load data."""
+    """Load gat."""
     names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']  # ind.cora.test.index left out
     objects = []
     for i in range(len(names)):
-        with open("data/ind.{}.{}".format(dataset, names[i]), 'rb') as f:
+        with open("gat/ind.{}.{}".format(dataset, names[i]), 'rb') as f:
             if sys.version_info > (3, 0):
                 objects.append(pkl.load(f, encoding='latin1'))
             else:
@@ -70,7 +70,7 @@ def load_data_0():
     x, y, tx, ty, allx, ally, graph = tuple(objects)
     print(f'This is graph {graph},{len(graph)}')
 
-    test_idx_reorder = parse_index_file("data/ind.{}.test.index".format(dataset))
+    test_idx_reorder = parse_index_file("gat/ind.{}.test.index".format(dataset))
 
     test_idx_range = np.sort(test_idx_reorder)  # test_idx_range =  [1708,1709,...,2707] 1000 entries
 
@@ -117,7 +117,7 @@ def load_data():
     names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']  # ind.cora.test.index left out
     objects = []
     for i in range(len(names)):
-        with open("data/ind.{}.{}".format(dataset, names[i]), 'rb') as f:
+        with open("gat/ind.{}.{}".format(dataset, names[i]), 'rb') as f:
             if sys.version_info > (3, 0):
                 objects.append(pkl.load(f, encoding='latin1'))
             else:
@@ -136,7 +136,7 @@ def load_data():
     print(f'This is graph {graph},{len(graph)}')
     # 过滤节点
 
-    test_idx_reorder = parse_index_file("data/ind.{}.test.index".format(dataset))
+    test_idx_reorder = parse_index_file("gat/ind.{}.test.index".format(dataset))
 
     test_idx_range_0 = np.sort(test_idx_reorder)  # test_idx_range =  [1708,1709,...,2707] 1000 entries
 
@@ -236,7 +236,7 @@ def sparse_to_tuple(sparse_mx):
 
 def standardize_data(f, train_mask):
     """Standardize feature matrix and convert to tuple representation"""
-    # standardize data
+    # standardize gat
     f = f.todense()
     mu = f[train_mask == True, :].mean(axis=0)
     sigma = f[train_mask == True, :].std(axis=0)

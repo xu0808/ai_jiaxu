@@ -9,4 +9,4 @@ data_dir = 'E:\\study\\rec\\data\\graph\\input'
 wiki_dir = os.path.join(data_dir, 'wiki')
 wiki_edge_file = os.path.join(wiki_dir, 'Wiki_edgelist.txt')
 
-out_dir = os.path.join('graph/data', 'out')
+out_dir = os.path.join('graph/gat', 'out')

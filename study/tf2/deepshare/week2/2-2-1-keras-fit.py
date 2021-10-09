@@ -39,13 +39,13 @@ model.fit(x_train, y_train, batch_size=32, epochs=5, validation_data=(x_val, y_v
 # model.fit(x_train, y_train, batch_size=64, validation_split=0.2, epochs=1)
 
 # 1.3 模型验证
-# Evaluate the model on the test data using `evaluate`
-print('\n# Evaluate on test data')
+# Evaluate the model on the test gat using `evaluate`
+print('\n# Evaluate on test gat')
 results = model.evaluate(x_test, y_test, batch_size=128)
 print('test loss, test acc:', results)
 
 # Generate predictions (probabilities -- the output of the last layer)
-# on new data using `predict`
+# on new gat using `predict`
 print('\n# Generate predictions for 3 samples')
 predictions = model.predict(x_test[:3])
 print('predictions shape:', predictions.shape)

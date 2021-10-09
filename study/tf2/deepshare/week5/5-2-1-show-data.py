@@ -17,13 +17,13 @@ classfication = ['alarm clock', 'eiffel tower', 'angel', 'ant', 'car',
 # 每个batch中有200，000张图片
 # 这样来获得data和label
 x = np.load(os.path.join(quick_draw_dir, 'train_batch_1.npz'))
-data = x['data']
+data = x['gat']
 label = x['labels']
 
 # 这样来查看某张图片
 import matplotlib.pyplot as plt
 
-data = x['data']
+data = x['gat']
 img = np.reshape(data, [-1, 28, 28])[0]
 plt.imshow(img)
 plt.show()

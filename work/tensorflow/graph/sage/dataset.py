@@ -39,7 +39,7 @@ class CoraData:
         # 统计所有邻节点
 
     """
-    def __init__(self, data_root='data/'):
+    def __init__(self, data_root='gat/'):
         self.data_root = data_root
 
     def load_file(self, dataset='cora'):
@@ -51,7 +51,7 @@ class CoraData:
         return idx_features_labels, edges
 
     def get_data(self):
-        print('Process data ...')
+        print('Process gat ...')
         # （论文编号[0]_词向量_论文类别[-1]）,（原始论文，引用者）
         idx_features_labels, edges_0 = self.load_file()
         # 特征
@@ -84,7 +84,7 @@ class CoraData:
 
 
 class PPIData:
-    def __init__(self, data_root='data/'):
+    def __init__(self, data_root='gat/'):
         self.data_root = data_root
 
     def load_file(self, dataset='toy-ppi'):
@@ -96,7 +96,7 @@ class PPIData:
         return feature, edges
 
     def get_data(self):
-        print('Process data ...')
+        print('Process gat ...')
         feature_0, edges = self.load_file()
         max_node = 0
         # 计算每个节点的所有邻居节点(k->node, v->neighbors)
@@ -123,4 +123,4 @@ class PPIData:
 if __name__ == "__main__":
     # cora_data = CoraData().get_data()
     ppi_data = PPIData().get_data()
-    print('loader data')
+    print('loader gat')

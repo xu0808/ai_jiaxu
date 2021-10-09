@@ -11,7 +11,7 @@ import tensorflow as tf
 
 if __name__ == "__main__":
     # G = nx.read_edgelist(config.wiki_edge_file, create_using=nx.DiGraph(),
-    #                      nodetype=None, data=[('weight', int)])
+    #                      nodetype=None, gat=[('weight', int)])
     #
     # t, v, test = tfg.datasets.ppi.PPIDataset().load_data()
     # #
