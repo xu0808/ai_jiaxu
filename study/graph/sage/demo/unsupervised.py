@@ -40,9 +40,9 @@ def run_cora():
     num_nodes, raw_features, neigh_dict = load_ppi()
 
     # ENABLE_UNKNOWN_OP = False
-    if ENABLE_UNKNOWN_OP:
-        # /graphsage/unsupervised_train.py, line 139
-        raw_features = np.vstack([raw_features, np.zeros((raw_features.shape[1],))])
+    # if ENABLE_UNKNOWN_OP:
+    #     # /graphsage/unsupervised_train.py, line 139
+    #     raw_features = np.vstack([raw_features, np.zeros((raw_features.shape[1],))])
 
     minibatch_generator = generate_training_minibatch ( neigh_dict
                                                       , BATCH_SIZE

@@ -4,6 +4,7 @@ import tensorflow as tf
 
 init_fn = tf.keras.initializers.GlorotUniform
 
+
 class GraphSageBase(tf.keras.Model):
     """
     GraphSage base model outputing embeddings of given nodes
@@ -20,17 +21,17 @@ class GraphSageBase(tf.keras.Model):
 
         self.seq_layers = []
         # 采样层数 num_layers = 2
-        for i in range (1, num_layers + 1):
+        for i in range(1, num_layers + 1):
             layer_name = "agg_lv" + str(i)
             # i=1,internal_dim=128
             # else internal_dim=1433
             input_dim = internal_dim if i > 1 else raw_features.shape[-1]
             has_activ = last_has_activ if i == num_layers else True
             # 
-            aggregator_layer = MeanAggregator ( input_dim
+            aggregator_layer = MeanAggregator(input_dim
                                               , internal_dim
                                               , name=layer_name
-                                              , activ = has_activ
+                                              , activ=has_activ
                                               )
             self.seq_layers.append(aggregator_layer)
 
@@ -41,12 +42,13 @@ class GraphSageBase(tf.keras.Model):
         # squeeze: 将原始input中所有维度为1的那些维都删掉的结果
         x = self.input_layer(tf.squeeze(minibatch.src_nodes))
         for aggregator_layer in self.seq_layers:
-            x = aggregator_layer ( x
+            x = aggregator_layer(x
                                  , minibatch.dstsrc2srcs.pop()
                                  , minibatch.dstsrc2dsts.pop()
                                  , minibatch.dif_mats.pop()
                                  )
         return x
+
 
 class GraphSageUnsupervised(GraphSageBase):
     # # raw_features, 128, 2, 1.0
@@ -56,32 +58,33 @@ class GraphSageUnsupervised(GraphSageBase):
 
     def call(self, minibatch):
         embeddingABN = tf.math.l2_normalize(super().call(minibatch), 1)
-        self.add_loss (
-                compute_uloss ( tf.gather(embeddingABN, minibatch.dst2batchA)
-                              , tf.gather(embeddingABN, minibatch.dst2batchB)
-                              , tf.boolean_mask(embeddingABN, minibatch.dst2batchN)
-                              , self.neg_weight
-                              )
-                )
+        self.add_loss(
+            compute_uloss(tf.gather(embeddingABN, minibatch.dst2batchA)
+                          , tf.gather(embeddingABN, minibatch.dst2batchB)
+                          , tf.boolean_mask(embeddingABN, minibatch.dst2batchN)
+                          , self.neg_weight
+                          )
+        )
         return embeddingABN
-    
+
+
 class GraphSageSupervised(GraphSageBase):
     def __init__(self, raw_features, internal_dim, num_layers, num_classes):
         super().__init__(raw_features, internal_dim, num_layers, True)
-        
+
         # 分类器
-        self.classifier = tf.keras.layers.Dense ( num_classes
-                                                , activation = tf.nn.softmax
-                                                , use_bias = False
-                                                , kernel_initializer = init_fn
-                                                , name = "classifier"
+        self.classifier = tf.keras.layers.Dense(num_classes
+                                                , activation=tf.nn.softmax
+                                                , use_bias=False
+                                                , kernel_initializer=init_fn
+                                                , name="classifier"
                                                 )
 
     def call(self, minibatch):
         """
         :param [node] nodes: target nodes for embedding
         """
-        return self.classifier( super().call(minibatch) )
+        return self.classifier(super().call(minibatch))
 
 
 ################################################################
@@ -95,12 +98,13 @@ class RawFeature(tf.keras.layers.Layer):
         """
         super().__init__(trainable=False, **kwargs)
         self.features = tf.constant(features)
-        
+
     def call(self, nodes):
         """
         :param [int] nodes: node ids
         """
         return tf.gather(self.features, nodes)
+
 
 class MeanAggregator(tf.keras.layers.Layer):
     def __init__(self, src_dim, dst_dim, activ=True, **kwargs):
@@ -110,13 +114,13 @@ class MeanAggregator(tf.keras.layers.Layer):
         """
         super().__init__(**kwargs)
         self.activ_fn = tf.nn.relu if activ else tf.identity
-        self.w = self.add_weight( name = kwargs["name"] + "_weight"
-                                , shape = (src_dim*2, dst_dim)
-                                , dtype = tf.float32
-                                , initializer = init_fn
-                                , trainable = True
-                                )
-    
+        self.w = self.add_weight(name=kwargs["name"] + "_weight"
+                                 , shape=(src_dim * 2, dst_dim)
+                                 , dtype=tf.float32
+                                 , initializer=init_fn
+                                 , trainable=True
+                                 )
+
     def call(self, dstsrc_features, dstsrc2src, dstsrc2dst, dif_mat):
         """
         :param tensor dstsrc_features: the embedding from the previous layer
@@ -131,11 +135,12 @@ class MeanAggregator(tf.keras.layers.Layer):
         x = tf.matmul(concatenated_features, self.w)
         return self.activ_fn(x)
 
+
 ################################################################
 #               Custom Loss Function (Unsupervised)            #
 ################################################################
 
-@tf.function 
+@tf.function
 def compute_uloss(embeddingA, embeddingB, embeddingN, neg_weight):
     """
     compute and return the loss for unspervised model based on Eq (1) in the
@@ -150,22 +155,22 @@ def compute_uloss(embeddingA, embeddingB, embeddingN, neg_weight):
     """
     # positive affinity: pair-wise calculation
     # 边的两端节点对应相乘，求相似度
-    pos_affinity = tf.reduce_sum ( tf.multiply ( embeddingA, embeddingB ), axis=1 )
-    
+    pos_affinity = tf.reduce_sum(tf.multiply(embeddingA, embeddingB), axis=1)
+
     # negative affinity: enumeration of all combinations of (embeddingA, embeddingN)
     # 每个正样本都和负样本求相似度
-    neg_affinity = tf.matmul ( embeddingA, tf.transpose ( embeddingN ) )
+    neg_affinity = tf.matmul(embeddingA, tf.transpose(embeddingN))
 
-    pos_xent = tf.nn.sigmoid_cross_entropy_with_logits ( tf.ones_like(pos_affinity)
+    pos_xent = tf.nn.sigmoid_cross_entropy_with_logits(tf.ones_like(pos_affinity)
                                                        , pos_affinity
-                                                       , "positive_xent" )
+                                                       , "positive_xent")
     # p1:[1,2,3],p2:[[0.1,0.5,0.4]]
-    neg_xent = tf.nn.sigmoid_cross_entropy_with_logits ( tf.zeros_like(neg_affinity)
+    neg_xent = tf.nn.sigmoid_cross_entropy_with_logits(tf.zeros_like(neg_affinity)
                                                        , neg_affinity
-                                                       , "negative_xent" )
+                                                       , "negative_xent")
 
-    weighted_neg = tf.multiply ( neg_weight, tf.reduce_sum(neg_xent) )
-    batch_loss = tf.add ( tf.reduce_sum(pos_xent), weighted_neg )
+    weighted_neg = tf.multiply(neg_weight, tf.reduce_sum(neg_xent))
+    batch_loss = tf.add(tf.reduce_sum(pos_xent), weighted_neg)
 
     # per batch loss: GraphSAGE:models.py line 378
-    return tf.divide ( batch_loss, embeddingA.shape[0] )
+    return tf.divide(batch_loss, embeddingA.shape[0])

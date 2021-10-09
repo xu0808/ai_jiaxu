@@ -1,5 +1,7 @@
 基于tensorflow2.0实现的Graph SAGE模型。
 https://github.com/bubblezhong/Graph
+GraphSAGE 模型解读与tensorflow2.0代码实现
+https://blog.csdn.net/VariableX/article/details/110005243
 
 其中：
 

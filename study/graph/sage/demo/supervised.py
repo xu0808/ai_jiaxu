@@ -11,7 +11,7 @@ from minibatch import build_batch_from_nodes as build_batch
 from graphsage import GraphSageSupervised as GraphSage
 
 # NN parameters
-SAMPLE_SIZES = [5, 5] # implicit number of layers
+SAMPLE_SIZES = [5, 5]  # implicit number of layers
 INTERNAL_DIM = 128
 # training parameters
 BATCH_SIZE = 256
@@ -29,14 +29,14 @@ def run_cora():
     test_nodes = all_nodes[2048:]
 
     # training
-    
+
     # 构造训练数据集
     # batch = MiniBatch(src_nodes, dstsrc2srcs, dstsrc2dsts, dif_mats)
     # 训练集对应的label
     def generate_training_minibatch(nodes_for_training, all_labels, batch_size):
         while True:
             # 从 nodes_for_training 中随机采取 batch_size 个样本[4,6,34,98]
-            mini_batch_nodes = np.random.choice ( nodes_for_training
+            mini_batch_nodes = np.random.choice(nodes_for_training
                                                 , size=batch_size
                                                 , replace=False
                                                 )
@@ -48,7 +48,6 @@ def run_cora():
 
     optimizer = tf.keras.optimizers.SGD(learning_rate=LEARNING_RATE)
     loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
-
 
     times = []
     # 循环调用minibatch_generator,调用次数：TRAINING_STEPS
@@ -69,6 +68,7 @@ def run_cora():
     score = f1_score(labels[test_nodes], results.numpy().argmax(axis=1), average="micro")
     print("Validation F1: ", score)
     print("Average batch time: ", np.mean(times))
+
 
 if __name__ == "__main__":
     run_cora()

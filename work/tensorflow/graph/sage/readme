@@ -1,12 +1,23 @@
-【v0- 原始版】
-参考自:
+【v0-原始版+极简版】
+1、sup.py 有监督模型
+2、unsup.py 无监督模型
+参考自：
 https://github.com/bubblezhong/Graph
+# GraphSAGE 模型解读与tensorflow2.0代码实现
+# https://blog.csdn.net/VariableX/article/details/110005243
 
 
-【v1-极简版】
+3、极简版（sage_0)
+# 学习聚合函数 GraphSAGE
+# https://blog.csdn.net/weixin_44413191/article/details/109008096
+
+
+【v1-Tensorflow2.0整理版】
 参考自：
 # GraphSAGE-Tensorflow 2.0-有监督分类模型
 # https://zhuanlan.zhihu.com/p/149684079
+# 图卷积神经网络入门实战-Tensorflow 2.0实现
+# https://zhuanlan.zhihu.com/p/148107956
 
 1、sup_0.py 原始demo
 2、sup.py 有监督模型
