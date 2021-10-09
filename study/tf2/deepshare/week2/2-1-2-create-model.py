@@ -21,13 +21,6 @@ def seq():
     model.add(layers.Dense(64, activation='relu'))  # 第二层
     model.add(layers.Dense(10))  # 第三层
     # 。。。。。。。
-    from tensorflow.keras import layers
-    import tensorflow as tf
-    model = tf.keras.Sequential()
-    model.add(layers.Dense(64, activation='relu'))  # 第一层
-    model.add(layers.Dense(64, activation='relu'))  # 第二层
-    model.add(layers.Dense(10))  # 第三层
-    # 。。。。。。。
     # 第二种Sequential
     model = tf.keras.Sequential([
         layers.Dense(64, activation='relu', input_shape=(32,)),  # 第一层
@@ -52,7 +45,6 @@ def func():
 
     # 1、单一输入、输出
     inputs = tf.keras.Input(shape=(32,))
-    # inputs = tf.keras.Input(shape=(32,))
     x = layers.Dense(64, activation='relu')(inputs)  # 第一层
     x = layers.Dense(64, activation='relu')(x)  # 第二层
     predictions = layers.Dense(10)(x)  # 第三层
@@ -61,6 +53,9 @@ def func():
     model.compile(optimizer=tf.keras.optimizers.RMSprop(0.001),
                   loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
+
+    inputs1 = tf.keras.Input(shape=(32,))
+    inputs2 = tf.keras.Input(shape=(32,))
     model = tf.keras.Model(inputs=[inputs1, inputs2], outputs=predictions)
 
     model.compile(optimizer=tf.keras.optimizers.RMSprop(0.001),
@@ -75,7 +70,6 @@ def func():
     data = np.random.random((1000, 32))
     labels = np.random.random((1000, 10))
     model.fit(data, labels, batch_size=32, epochs=5)
-
 
     # 2、多输入、输出
     inputs1 = tf.keras.Input(shape=(32,))  # 输入1
@@ -98,8 +92,6 @@ def func():
     model.fit((data1, data2), labels, batch_size=32, epochs=5)
 
 
-
-
 class MyModel(tf.keras.Model):
 
     def __init__(self, num_classes=10):
@@ -115,6 +107,7 @@ class MyModel(tf.keras.Model):
         x = self.dense_1(inputs)
         x = self.dense_2(x)
         return x
+
 
 def sub():
     model = MyModel(num_classes=10)

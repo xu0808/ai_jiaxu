@@ -1,0 +1,11 @@
+【启动】
+jupyter notebook
+
+
+【数据】
+data_dir = 'D:\\Users\\jiaxu\\data\\deepshare'
+
+
+import cv2
+
+pip install opencv-python -i http://pypi.douban.com/simple/ --trusted-host pypi.douban.com
