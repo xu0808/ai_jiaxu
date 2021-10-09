@@ -39,7 +39,7 @@ class CoraData:
         # 统计所有邻节点
 
     """
-    def __init__(self, data_root='gat/'):
+    def __init__(self, data_root='E:\\workspace\\ai_jiaxu\\data\\graph\\cora\\'):
         self.data_root = data_root
 
     def load_file(self, dataset='cora'):
@@ -84,7 +84,7 @@ class CoraData:
 
 
 class PPIData:
-    def __init__(self, data_root='gat/'):
+    def __init__(self, data_root='E:\\workspace\\ai_jiaxu\\data\\graph\\ppi\\'):
         self.data_root = data_root
 
     def load_file(self, dataset='toy-ppi'):
@@ -121,6 +121,6 @@ class PPIData:
 
 
 if __name__ == "__main__":
-    # cora_data = CoraData().get_data()
-    ppi_data = PPIData().get_data()
+    cora_data = CoraData().get_data()
+    # ppi_data = PPIData().get_data()
     print('loader gat')
