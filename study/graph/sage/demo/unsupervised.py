@@ -4,23 +4,21 @@ import numpy as np
 import tensorflow as tf
 import time
 from itertools import islice
-from sklearn.metrics import f1_score
-
-from dataloader.cora import load_cora
 from dataloader.ppi import load_ppi
 from minibatch import build_batch_from_edges as build_batch
 from graphsage import GraphSageUnsupervised as GraphSage
 from config import ENABLE_UNKNOWN_OP
 
-#### NN parameters
+# NN parameters
 SAMPLE_SIZES = [25, 10]
 INTERNAL_DIM = 128
 NEG_WEIGHT = 1.0
-#### training parameters
+# training parameters
 BATCH_SIZE = 512
 NEG_SIZE = 20
 TRAINING_STEPS = 100
 LEARNING_RATE = 0.00001
+
 
 def generate_training_minibatch(adj_mat_dict, batch_size, sample_sizes, neg_size):
     # 根据邻居信息构造边
@@ -36,11 +34,11 @@ def generate_training_minibatch(adj_mat_dict, batch_size, sample_sizes, neg_size
         batch = build_batch(mini_batch_edges, nodes, adj_mat_dict, sample_sizes, neg_size)
         yield batch
 
+
 def run_cora():
     # num_nodes, raw_features, _, _, neigh_dict = load_cora()
     num_nodes, raw_features, neigh_dict = load_ppi()
 
-    
     # ENABLE_UNKNOWN_OP = False
     if ENABLE_UNKNOWN_OP:
         # /graphsage/unsupervised_train.py, line 139
@@ -70,6 +68,7 @@ def run_cora():
         times.append(end_time - start_time)
         print("Loss:", loss.numpy())
     print("Average batch time: ", np.mean(times))
+
 
 if __name__ == "__main__":
     run_cora()

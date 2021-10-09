@@ -3,7 +3,7 @@
 import numpy as np
 from collections import defaultdict
 
-datapath = "datasamples/cora"
+datapath = 'E:\\workspace\\ai_jiaxu\\data\\graph\\cora'
 
 def load_cora():
     num_nodes = 2708

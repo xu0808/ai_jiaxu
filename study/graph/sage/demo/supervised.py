@@ -10,13 +10,14 @@ from dataloader.cora import load_cora
 from minibatch import build_batch_from_nodes as build_batch
 from graphsage import GraphSageSupervised as GraphSage
 
-#### NN parameters
+# NN parameters
 SAMPLE_SIZES = [5, 5] # implicit number of layers
 INTERNAL_DIM = 128
-#### training parameters
+# training parameters
 BATCH_SIZE = 256
 TRAINING_STEPS = 100
 LEARNING_RATE = 0.5
+
 
 def run_cora():
     num_nodes, raw_features, labels, num_classes, neigh_dict = load_cora()
