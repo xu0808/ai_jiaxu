@@ -6,7 +6,7 @@
 # https://zhuanlan.zhihu.com/p/148107956
 import tensorflow as tf
 import numpy as np
-from dataset import CoraData
+from v1.dataset import CoraData
 import matplotlib.pyplot as plt
 
 

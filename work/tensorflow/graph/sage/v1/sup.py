@@ -4,8 +4,8 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-from dataset import CoraData
-from sample import multihop_sampling
+from v1.dataset import CoraData
+from v1.sample import multihop_sampling
 from model import GraphSage
 
 # 模型参数

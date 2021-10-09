@@ -1,9 +1,13 @@
-【极简版】
+【v0- 原始版】
+参考自:
+https://github.com/bubblezhong/Graph
+
+
+【v1-极简版】
+参考自：
+# GraphSAGE-Tensorflow 2.0-有监督分类模型
+# https://zhuanlan.zhihu.com/p/149684079
+
 1、sup_0.py 原始demo
 2、sup.py 有监督模型
 3、un_sup.py 无监督模型
-
-【原始版】
-debug/.*
-参考自:
-https://github.com/bubblezhong/Graph

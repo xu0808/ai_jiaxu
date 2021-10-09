@@ -2,8 +2,8 @@ import numpy as np
 import tensorflow as tf
 import time
 import argparse
-from debug.EGES_model_dataset import EGES_Model
-from debug.utils import *
+from v0.EGES_model_dataset import EGES_Model
+from v0.utils import *
 
 
 if __name__ == '__main__':

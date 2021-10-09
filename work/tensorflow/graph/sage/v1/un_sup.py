@@ -4,8 +4,8 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-from dataset import PPIData,CoraData
-from sample import neg_sampling
+from v1.dataset import PPIData
+from v1.sample import neg_sampling
 from model import GraphSage_unsup as sage
 
 # 模型参数
