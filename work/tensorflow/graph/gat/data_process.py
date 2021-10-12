@@ -13,6 +13,7 @@ from collections import defaultdict
 dataset = 'cora'  # ["cora", "citeseer", "pubmed"]
 
 node_max = 2000 - 1
+datapath = 'E:\\workspace\\ai_jiaxu\\data\\graph\\gat'
 
 """
  Prepare adjacency matrix by expanding up to a given neighbourhood.
@@ -61,7 +62,7 @@ def load_data_0():
     names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']  # ind.cora.test.index left out
     objects = []
     for i in range(len(names)):
-        with open("gat/ind.{}.{}".format(dataset, names[i]), 'rb') as f:
+        with open("{}/ind.{}.{}".format(datapath, dataset, names[i]), 'rb') as f:
             if sys.version_info > (3, 0):
                 objects.append(pkl.load(f, encoding='latin1'))
             else:
@@ -70,7 +71,7 @@ def load_data_0():
     x, y, tx, ty, allx, ally, graph = tuple(objects)
     print(f'This is graph {graph},{len(graph)}')
 
-    test_idx_reorder = parse_index_file("gat/ind.{}.test.index".format(dataset))
+    test_idx_reorder = parse_index_file("{}/ind.{}.test.index".format(datapath, dataset))
 
     test_idx_range = np.sort(test_idx_reorder)  # test_idx_range =  [1708,1709,...,2707] 1000 entries
 
@@ -117,7 +118,7 @@ def load_data():
     names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']  # ind.cora.test.index left out
     objects = []
     for i in range(len(names)):
-        with open("gat/ind.{}.{}".format(dataset, names[i]), 'rb') as f:
+        with open("{}/ind.{}.{}".format(datapath, dataset, names[i]), 'rb') as f:
             if sys.version_info > (3, 0):
                 objects.append(pkl.load(f, encoding='latin1'))
             else:
@@ -136,7 +137,7 @@ def load_data():
     print(f'This is graph {graph},{len(graph)}')
     # 过滤节点
 
-    test_idx_reorder = parse_index_file("gat/ind.{}.test.index".format(dataset))
+    test_idx_reorder = parse_index_file("{}/ind.{}.test.index".format(datapath, dataset))
 
     test_idx_range_0 = np.sort(test_idx_reorder)  # test_idx_range =  [1708,1709,...,2707] 1000 entries
 
