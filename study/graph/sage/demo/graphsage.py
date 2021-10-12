@@ -57,15 +57,39 @@ class GraphSageUnsupervised(GraphSageBase):
         self.neg_weight = neg_weight
 
     def call(self, minibatch):
-        embeddingABN = tf.math.l2_normalize(super().call(minibatch), 1)
-        self.add_loss(
-            compute_uloss(tf.gather(embeddingABN, minibatch.dst2batchA)
-                          , tf.gather(embeddingABN, minibatch.dst2batchB)
-                          , tf.boolean_mask(embeddingABN, minibatch.dst2batchN)
-                          , self.neg_weight
-                          )
-        )
-        return embeddingABN
+        embABN = tf.math.l2_normalize(super().call(minibatch), 1)
+
+        # 损失函数计算
+        embA = tf.gather(embABN, minibatch.dst2batchA)
+        embB = tf.gather(embABN, minibatch.dst2batchB)
+        embN = tf.boolean_mask(embABN, minibatch.dst2batchN)
+
+
+        # 1、正样本损失函数计算
+        # 边的两端节点对应相乘，求相似度(点乘)
+        multiply_ab = tf.multiply(embA, embB)
+        # （行求和）
+        pos_affinity = tf.reduce_sum(multiply_ab, axis=1)
+        pos_label = tf.ones_like(pos_affinity)
+        # z * -log(sigmoid(x)) + (1 - z) * -log(1 - sigmoid(x))
+        pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(pos_label, pos_affinity, 'positive_xent')
+        # 1维数组求和
+        pos_loss = tf.reduce_sum(pos_losses)
+
+        # 2、负样本损失函数计算
+        # 每个正样本都和负样本求相似度
+        # shape(512,14)
+        neg_affinity = tf.matmul(embA, tf.transpose(embN))
+        neg_label = tf.zeros_like(neg_affinity)
+        # shape(512,14)
+        neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(neg_label, neg_affinity, 'negative_xent')
+        neg_losse_sum = tf.reduce_sum(neg_losses)
+        neg_loss = tf.multiply(self.neg_weight, neg_losse_sum)
+
+        batch_loss = tf.add(pos_loss, neg_loss)
+        loss = tf.divide(batch_loss, embA.shape[0])
+        self.add_loss(loss)
+        return embABN
 
 
 class GraphSageSupervised(GraphSageBase):
@@ -134,43 +158,3 @@ class MeanAggregator(tf.keras.layers.Layer):
         concatenated_features = tf.concat([aggregated_features, dst_features], 1)
         x = tf.matmul(concatenated_features, self.w)
         return self.activ_fn(x)
-
-
-################################################################
-#               Custom Loss Function (Unsupervised)            #
-################################################################
-
-@tf.function
-def compute_uloss(embeddingA, embeddingB, embeddingN, neg_weight):
-    """
-    compute and return the loss for unspervised model based on Eq (1) in the
-    GraphSage paper
-
-    :param 2d-tensor embeddingA: embedding of a list of nodes
-    :param 2d-tensor embeddingB: embedding of a list of neighbor nodes
-                                 pairwise to embeddingA
-    :param 2d-tensor embeddingN: embedding of a list of non-neighbor nodes
-                                 (negative samples) to embeddingA
-    :param float neg_weight: negative weight
-    """
-    # positive affinity: pair-wise calculation
-    # 边的两端节点对应相乘，求相似度
-    pos_affinity = tf.reduce_sum(tf.multiply(embeddingA, embeddingB), axis=1)
-
-    # negative affinity: enumeration of all combinations of (embeddingA, embeddingN)
-    # 每个正样本都和负样本求相似度
-    neg_affinity = tf.matmul(embeddingA, tf.transpose(embeddingN))
-
-    pos_xent = tf.nn.sigmoid_cross_entropy_with_logits(tf.ones_like(pos_affinity)
-                                                       , pos_affinity
-                                                       , "positive_xent")
-    # p1:[1,2,3],p2:[[0.1,0.5,0.4]]
-    neg_xent = tf.nn.sigmoid_cross_entropy_with_logits(tf.zeros_like(neg_affinity)
-                                                       , neg_affinity
-                                                       , "negative_xent")
-
-    weighted_neg = tf.multiply(neg_weight, tf.reduce_sum(neg_xent))
-    batch_loss = tf.add(tf.reduce_sum(pos_xent), weighted_neg)
-
-    # per batch loss: GraphSAGE:models.py line 378
-    return tf.divide(batch_loss, embeddingA.shape[0])
