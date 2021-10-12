@@ -7,7 +7,8 @@ from itertools import islice
 from dataloader.ppi import load_ppi
 from minibatch import build_batch_from_edges as build_batch
 from graphsage import GraphSageUnsupervised as GraphSage
-from config import ENABLE_UNKNOWN_OP
+
+# from config import ENABLE_UNKNOWN_OP
 
 # NN parameters
 SAMPLE_SIZES = [25, 10]
@@ -29,8 +30,8 @@ def generate_training_minibatch(adj_mat_dict, batch_size, sample_sizes, neg_size
         # 对边进行采样，得到采样后的边：mini_batch_edges
         # edges.shape[0]=10556,产生(0,10556)中的batch_size个数字[2,44,66,]作为edge的索引。
         # 得到边的数组
-        mini_batch_edges = edges[np.random.randint(edges.shape[0], size = batch_size), :]
-        
+        mini_batch_edges = edges[np.random.randint(edges.shape[0], size=batch_size), :]
+
         batch = build_batch(mini_batch_edges, nodes, adj_mat_dict, sample_sizes, neg_size)
         yield batch
 
@@ -44,12 +45,12 @@ def run_cora():
     #     # /graphsage/unsupervised_train.py, line 139
     #     raw_features = np.vstack([raw_features, np.zeros((raw_features.shape[1],))])
 
-    minibatch_generator = generate_training_minibatch ( neigh_dict
+    minibatch_generator = generate_training_minibatch(neigh_dict
                                                       , BATCH_SIZE
                                                       , SAMPLE_SIZES
                                                       , NEG_SIZE
                                                       )
-    
+
     graphsage = GraphSage(raw_features, INTERNAL_DIM, len(SAMPLE_SIZES), NEG_WEIGHT)
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
