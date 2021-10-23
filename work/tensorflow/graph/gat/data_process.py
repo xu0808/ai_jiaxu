@@ -157,7 +157,7 @@ def load_data():
     # test_idx_range = np.array([idx for idx in list(test_idx_range_0) if idx <= node_max])
     #
     # features[test_idx_reorder, :] = features[test_idx_range, :]
-    adj_dict = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
+    adj_matrix = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
 
     labels = np.vstack((ally, ty))
     # labels[test_idx_reorder, :] = labels[test_idx_range, :]
@@ -172,17 +172,17 @@ def load_data():
     val_mask = sample_mask(idx_val, labels.shape[0])
     test_mask = sample_mask(idx_test, labels.shape[0])
 
-    y_train = np.zeros(labels.shape)
-    y_val = np.zeros(labels.shape)
-    y_test = np.zeros(labels.shape)
-    y_train[train_mask, :] = labels[train_mask, :]
-    y_val[val_mask, :] = labels[val_mask, :]
-    y_test[test_mask, :] = labels[test_mask, :]
+    # y_train = np.zeros(labels.shape)
+    # y_val = np.zeros(labels.shape)
+    # y_test = np.zeros(labels.shape)
+    y_train = labels[train_mask, :]
+    y_val = labels[val_mask, :]
+    y_test = labels[test_mask, :]
 
-    print(f'adj.shape: {adj_dict.shape}')
+    print(f'adj.shape: {adj_matrix.shape}')
     print(f'features.shape: {features.shape}')
 
-    return adj_dict, features, y_train, y_val, y_test, train_mask, val_mask, test_mask
+    return adj_matrix, features,
 
 
 def load_random_data(size):
@@ -294,4 +294,4 @@ if __name__ == "__main__":
     # features：节点信息，2708x1433
     # y_train：标签信息
     # train_mask：哪些是训练样本的标志
-    adj_dict, features, y_train, y_val, y_test, train_mask, val_mask, test_mask = load_data()
+    adj_matrix, features, y_train, y_val, y_test, train_mask, val_mask, test_mask = load_data()

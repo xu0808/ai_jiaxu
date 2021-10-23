@@ -22,27 +22,18 @@ nonlinearity = tf.nn.elu
 optimizer = tf.keras.optimizers.Adam(lr=lr)
 
 
-def train(model, inputs, bias_mat, lbl_in, msk_in, training):
+def train(model, inputs, bias_mat, lbl_in, msk_in):
     with tf.GradientTape() as tape:
-        logits, accuracy, loss = model(inputs=inputs,
-                                       training=True,
-                                       bias_mat=bias_mat,
-                                       lbl_in=lbl_in,
-                                       msk_in=msk_in)
-
-    gradients = tape.gradient(loss, model.trainable_variables)
-    gradient_variables = zip(gradients, model.trainable_variables)
-    optimizer.apply_gradients(gradient_variables)
-
+        logits, accuracy, loss = model(inputs=inputs, bias_mat=bias_mat, lbl_in=lbl_in, msk_in=msk_in, training=True)
+    # 梯度下降
+    grads = tape.gradient(loss, model.trainable_variables)
+    # 优化器
+    optimizer.apply_gradients(zip(grads, model.trainable_variables))
     return logits, accuracy, loss
 
 
-def evaluate(model, inputs, bias_mat, lbl_in, msk_in, training):
-    logits, accuracy, loss = model(inputs=inputs,
-                                   bias_mat=bias_mat,
-                                   lbl_in=lbl_in,
-                                   msk_in=msk_in,
-                                   training=False)
+def evaluate(model, inputs, bias_mat, lbl_in, msk_in):
+    logits, accuracy, loss = model(inputs=inputs, bias_mat=bias_mat, lbl_in=lbl_in, msk_in=msk_in, training=False)
     return logits, accuracy, loss
 
 
@@ -59,11 +50,11 @@ if __name__ == "__main__":
     print('nonlinearity: ' + str(nonlinearity))
 
     # 加载数据
-    # adj_dict:  sparse matrix，边表信息。 2708x2708
+    # adj_matrix: 邻接矩阵(sparse matrix) 2708x2708
     # features：节点信息，2708x1433
     # y_train：标签信息
     # train_mask：哪些是训练样本的标志
-    adj_dict, features, y_train, y_val, y_test, train_mask, val_mask, test_mask = load_data()
+    adj_matrix, features, y_train, y_val, y_test, train_mask, val_mask, test_mask = load_data()
 
     # features归一化
     # 返回：features：归一化后的features，，spars包括三个部分，值，坐标和shape
@@ -88,13 +79,13 @@ if __name__ == "__main__":
 
     if Sparse:
         # 将边表adj处理成SparseTensor
-        biases = preprocess_adj_bias(adj_dict)
+        biases = preprocess_adj_bias(adj_matrix)
 
     else:
         # adj_to_bias 返回经过处理的adj，有边的地方变成0，无边的地方变成 -1e9
-        adj_dict = adj_dict.todense()
-        adj_dict = adj_dict[np.newaxis]
-        biases = adj_to_bias(adj_dict, [nb_nodes], nhood=1)
+        adj_matrix = adj_matrix.todense()
+        adj_matrix = adj_matrix[np.newaxis]
+        biases = adj_to_bias(adj_matrix, [nb_nodes], nhood=1)
 
     # 定义模型
     # hid_units = [8]，n_heads = [8, 1]
@@ -115,58 +106,41 @@ if __name__ == "__main__":
     # 训练
     for epoch in range(nb_epochs):
         # ##Training Segment# ##
-        tr_step = 0
-        tr_size = features.shape[0]
-        while tr_step * batch_size < tr_size:
-
-            if Sparse:
-                bbias = biases
-            else:
-                bbias = biases[tr_step * batch_size:(tr_step + 1) * batch_size]
-
-            _, acc_tr, loss_value_tr = train(model,
-                                             inputs=features[tr_step * batch_size:(tr_step + 1) * batch_size],
-                                             bias_mat=bbias,
-                                             lbl_in=y_train[tr_step * batch_size:(tr_step + 1) * batch_size],
-                                             msk_in=train_mask[tr_step * batch_size:(tr_step + 1) * batch_size],
-                                             training=True)
+        start = 0
+        while start < nb_nodes:
+            end = start + batch_size
+            bbias = biases if Sparse else biases[start:end]
+            _, acc_tr, loss_value_tr = train(model, inputs=features[start:end], bias_mat=bbias,
+                                             lbl_in=y_train[start:end], msk_in=train_mask[start:end])
             train_loss_avg += loss_value_tr
             train_acc_avg += acc_tr
-            tr_step += 1
+            start += batch_size
 
         # ##Validation Segment# ##
-        vl_step = 0
-        vl_size = features.shape[0]
-        while vl_step * batch_size < vl_size:
-
-            if Sparse:
-                bbias = biases
-            else:
-                bbias = biases[vl_step * batch_size:(vl_step + 1) * batch_size]
-
-            _, acc_vl, loss_value_vl = evaluate(model,
-                                                inputs=features[vl_step * batch_size:(vl_step + 1) * batch_size],
-                                                bias_mat=bbias,
-                                                lbl_in=y_val[vl_step * batch_size:(vl_step + 1) * batch_size],
-                                                msk_in=val_mask[vl_step * batch_size:(vl_step + 1) * batch_size],
-                                                training=False)
+        start = 0
+        while start < nb_nodes:
+            end = start + batch_size
+            bbias = biases if Sparse else biases[start:end]
+            _, acc_vl, loss_value_vl = evaluate(model, inputs=features[start:end], bias_mat=bbias,
+                                                lbl_in=y_val[start:end], msk_in=val_mask[start:end])
             val_loss_avg += loss_value_vl
             val_acc_avg += acc_vl
-            vl_step += 1
+            start += batch_size
 
+        step = start // batch_size
         print('Training: loss = %.5f, acc = %.5f | Val: loss = %.5f, acc = %.5f' %
-              (train_loss_avg / tr_step, train_acc_avg / tr_step,
-               val_loss_avg / vl_step, val_acc_avg / vl_step))
- 
+              (train_loss_avg / step, train_acc_avg / step,
+               val_loss_avg / step, val_acc_avg / step))
+
         # ##Early Stopping Segment# ##
 
-        if val_acc_avg / vl_step >= vacc_mx or val_loss_avg / vl_step <= vlss_mn:
-            if val_acc_avg / vl_step >= vacc_mx and val_loss_avg / vl_step <= vlss_mn:
-                vacc_early_model = val_acc_avg / vl_step
-                vlss_early_model = val_loss_avg / vl_step
+        if val_acc_avg / step >= vacc_mx or val_loss_avg / step <= vlss_mn:
+            if val_acc_avg / step >= vacc_mx and val_loss_avg / step <= vlss_mn:
+                vacc_early_model = val_acc_avg / step
+                vlss_early_model = val_loss_avg / step
                 working_weights = model.get_weights()
-            vacc_mx = np.max((val_acc_avg / vl_step, vacc_mx))
-            vlss_mn = np.min((val_loss_avg / vl_step, vlss_mn))
+            vacc_mx = np.max((val_acc_avg / step, vacc_mx))
+            vlss_mn = np.min((val_loss_avg / step, vlss_mn))
             curr_step = 0
         else:
             curr_step += 1
