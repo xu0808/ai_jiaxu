@@ -7,14 +7,15 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers
 
-# print(tf.__version__)
-# print(tf.test.is_gpu_available())
+tf.print(tf.__version__)
+tf.print(tf.test.is_gpu_available())
+
+optimizer = tf.keras.optimizers.RMSprop(0.001)
+loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+metrics = ['accuracy']
 
 
 def seq():
-    import tensorflow as tf
-    from tensorflow.keras import layers
-
     # 第一种Sequential
     model = tf.keras.Sequential()
     model.add(layers.Dense(64, activation='relu'))  # 第一层
@@ -29,44 +30,21 @@ def seq():
         # 。。。。。
     ])
 
-    model.compile(optimizer=tf.keras.optimizers.Adam(0.01),
-                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     data = np.random.random((1000, 32))
     labels = np.random.random((1000, 10))
-
     model.fit(data, labels, epochs=10, batch_size=32)
 
 
 def func():
-    import tensorflow as tf
-    from tensorflow.keras import layers
-
     # 1、单一输入、输出
     inputs = tf.keras.Input(shape=(32,))
     x = layers.Dense(64, activation='relu')(inputs)  # 第一层
     x = layers.Dense(64, activation='relu')(x)  # 第二层
     predictions = layers.Dense(10)(x)  # 第三层
     model = tf.keras.Model(inputs=inputs, outputs=predictions)
-
-    model.compile(optimizer=tf.keras.optimizers.RMSprop(0.001),
-                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])
-
-    inputs1 = tf.keras.Input(shape=(32,))
-    inputs2 = tf.keras.Input(shape=(32,))
-    model = tf.keras.Model(inputs=[inputs1, inputs2], outputs=predictions)
-
-    model.compile(optimizer=tf.keras.optimizers.RMSprop(0.001),
-                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])
-
-    import numpy as np
-    data1 = np.random.random((1000, 32))
-    data2 = np.random.random((1000, 32))
-    labels = np.random.random((1000, 10))
-    model.fit((data1, data2), labels, batch_size=32, epochs=5)
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
     data = np.random.random((1000, 32))
     labels = np.random.random((1000, 10))
     model.fit(data, labels, batch_size=32, epochs=5)
@@ -80,12 +58,8 @@ def func():
     x = layers.Dense(64, activation='relu')(x)  # 第二层
     predictions = layers.Dense(10)(x)  # 第三层
     model = tf.keras.Model(inputs=[inputs1, inputs2], outputs=predictions)
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
-    model.compile(optimizer=tf.keras.optimizers.RMSprop(0.001),
-                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])
-
-    import numpy as np
     data1 = np.random.random((1000, 32))
     data2 = np.random.random((1000, 32))
     labels = np.random.random((1000, 10))
@@ -102,7 +76,7 @@ class MyModel(tf.keras.Model):
         self.dense_2 = layers.Dense(num_classes)
 
     def call(self, inputs):
-        #定义前向传播
+        # 定义前向传播
         # 使用在 (in `__init__`)定义的层
         x = self.dense_1(inputs)
         x = self.dense_2(x)
@@ -111,12 +85,7 @@ class MyModel(tf.keras.Model):
 
 def sub():
     model = MyModel(num_classes=10)
-
-    model.compile(optimizer=tf.keras.optimizers.RMSprop(0.001),
-                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])
-
-    import numpy as np
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
     data = np.random.random((1000, 32))
     labels = np.random.random((1000, 10))
     # Trains for 5 epochs.

@@ -1,8 +1,7 @@
 # -*- tensor 的使用
 import tensorflow as tf
 
-# print(tf.__version__)
-# print(tf.test.is_gpu_available())
+print(tf.__version__)
 
 
 def tensor():
@@ -10,7 +9,7 @@ def tensor():
     mammal = tf.Variable("Elephant", tf.string)
     tf.print(tf.rank(mammal))
     tf.print(tf.shape(mammal))
-    print(tf.rank(mammal))
+    # print(tf.rank(mammal))
 
     # Rank 1
     mystr = tf.Variable(["Hello"], tf.string)
