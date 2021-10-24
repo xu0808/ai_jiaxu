@@ -1,11 +1,3 @@
-"""
-该项目运行环境：Windows 10
-python =3.6
-相关算法包环境
-tensorflow = 2.0.0
-numpy =1.18.3
-"""
-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import tensorflow as tf
@@ -15,27 +7,27 @@ from tensorflow.keras import Model
 import numpy as np
 import os
 
-print(tf.__version__)
-print(np.__version__)
-
+# 数据文件
 data_dir = 'D:\\Users\\jiaxu\\data\\deepshare'
 mnist = np.load(os.path.join(data_dir, "mnist.npz"))
-x_train, y_train = mnist['x_train'], mnist['y_train'],
+x_train, y_train = mnist['x_train'], mnist['y_train']
+print('x_train.shape = {}, y_train.shape = {}'.format(x_train.shape, y_train.shape))
 x_test, y_test = mnist['x_test'], mnist['y_test']
+print('x_test.shape = {}, y_test.shape = {}'.format(x_test.shape, y_test.shape))
+# 图像归一化
 x_train, x_test = x_train / 255.0, x_test / 255.0
-
-# Add a channels dimension
+# 添加通道维度
 x_train = x_train[..., tf.newaxis]
 x_test = x_test[..., tf.newaxis]
+print('x_train.shape = {}, x_test.shape = {}'.format(x_train.shape, x_test.shape))
 
-train_ds = tf.data.Dataset.from_tensor_slices(
-    (x_train, y_train)).shuffle(10000).batch(32)
-test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
+ds_train = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(1000).batch(32)
+ds_test = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
 
 
-class MyModel(Model):
+class my_model(Model):
     def __init__(self):
-        super(MyModel, self).__init__()
+        super(my_model, self).__init__()
         self.conv1 = Conv2D(32, 3, activation='relu')
         self.flatten = Flatten()
         self.d1 = Dense(128, activation='relu')
@@ -48,10 +40,11 @@ class MyModel(Model):
         return self.d2(x)
 
 
-model = MyModel()
-
+# 1、定义模型
+model = my_model()
+# 2、损失函数
 loss_object = tf.keras.losses.SparseCategoricalCrossentropy()
-
+# 3、优化其
 optimizer = tf.keras.optimizers.Adam()
 
 train_loss = tf.keras.metrics.Mean(name='train_loss')
@@ -64,22 +57,22 @@ test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 @tf.function
 def train_step(images, labels):
     with tf.GradientTape() as tape:
-        predictions = model(images)
-        loss = loss_object(labels, predictions)
+        predict = model(images)
+        loss = loss_object(labels, predict)
     gradients = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
     train_loss(loss)
-    train_accuracy(labels, predictions)
+    train_accuracy(labels, predict)
 
 
 @tf.function
 def test_step(images, labels):
-    predictions = model(images)
-    t_loss = loss_object(labels, predictions)
+    predict = model(images)
+    t_loss = loss_object(labels, predict)
 
     test_loss(t_loss)
-    test_accuracy(labels, predictions)
+    test_accuracy(labels, predict)
 
 
 EPOCHS = 5
@@ -91,15 +84,12 @@ for epoch in range(EPOCHS):
     test_loss.reset_states()
     test_accuracy.reset_states()
 
-    for images, labels in train_ds:
+    for images, labels in ds_train:
         train_step(images, labels)
 
-    for test_images, test_labels in test_ds:
+    for test_images, test_labels in ds_test:
         test_step(test_images, test_labels)
 
     template = 'Epoch {}, Loss: {}, Accuracy: {}, Test Loss: {}, Test Accuracy: {}'
-    print(template.format(epoch + 1,
-                          train_loss.result(),
-                          train_accuracy.result() * 100,
-                          test_loss.result(),
-                          test_accuracy.result() * 100))
+    print(template.format(epoch + 1, train_loss.result(), train_accuracy.result() * 100,
+                          test_loss.result(), test_accuracy.result() * 100))
