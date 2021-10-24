@@ -1,10 +1,9 @@
 # -*- 自动求导机制
-
 import tensorflow as tf
-print(tf.__version__)
+import numpy as np
+
 
 class MyModel(tf.keras.Model):
-
     def __init__(self, num_classes=10):
         super(MyModel, self).__init__(name='my_model')
         self.num_classes = num_classes
@@ -14,20 +13,16 @@ class MyModel(tf.keras.Model):
 
     def call(self, inputs):
         # 定义前向传播
-        # 使用在 (in `__init__`)定义的层
         x = self.dense_1(inputs)
         return self.dense_2(x)
 
-import numpy as np
+
 x_train = np.random.random((1000, 32))
 y_train = np.random.random((1000, 10))
 x_val = np.random.random((200, 32))
 y_val = np.random.random((200, 10))
 x_test = np.random.random((200, 32))
 y_test = np.random.random((200, 10))
-
-
-
 
 # 优化器
 optimizer = tf.keras.optimizers.SGD(learning_rate=1e-3)
@@ -59,7 +54,7 @@ for epoch in range(epochs):
             logits = model(x_batch_train)
             loss_value = loss_fn(y_batch_train, logits)
         grads = tape.gradient(loss_value, model.trainable_weights)
-        optimizer.apply_gradients(zip(grads, model.trainable_weights))  ####
+        optimizer.apply_gradients(zip(grads, model.trainable_weights))
 
         # 更新训练集的metrics
         train_acc_metric(y_batch_train, logits)
@@ -78,6 +73,3 @@ for epoch in range(epochs):
     val_acc = val_acc_metric.result()
     print('Validation acc: %s' % (float(val_acc),))
     val_acc_metric.reset_states()
-
-    # 显示测试集
-

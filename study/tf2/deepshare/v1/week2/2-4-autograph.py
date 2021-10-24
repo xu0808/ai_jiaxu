@@ -1,7 +1,5 @@
 # -*- autograph的机制原理
-
 import tensorflow as tf
-import numpy as np
 
 
 @tf.function(autograph=True)
