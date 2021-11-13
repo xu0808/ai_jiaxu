@@ -13,32 +13,6 @@ https://blog.csdn.net/lqfarmer/article/details/102369969
 https://blog.csdn.net/qq_28168421/article/details/109302062
 
 
-【Graph Embedding】
-1、Graph Embedding
-node2vec原理介绍及其spark实现
-https://zhuanlan.zhihu.com/p/122704411
-
-graph embedding 使用方法
-https://www.cnblogs.com/Allen-rg/p/11468573.html
-
-浅梦学习笔记 公众号文章汇总
-https://github.com/shenweichen/AlgoNotes
-https://github.com/shenweichen/GraphEmbedding
-https://github.com/stellargraph/stellargraph
-
-学习聚合函数 GraphSAGE
-https://blog.csdn.net/weixin_44413191/article/details/109008096
-
-
-【大厂实践】
-1、大规模图算法在京东广告的实践
-https://blog.csdn.net/rlnLo2pNEfx9c/article/details/117608234
-2、spark的图计算
-生产环境请关注api graphX https://spark.apache.org/graphx/
-Spark GraphX源码分析
-https://endymecy.gitbooks.io/spark-graphx-source-analysis/content/
-
-
 【horovod-分布式训练】
 分布式Horovod介绍
 https://blog.csdn.net/zwqjoy/article/details/89552432
@@ -63,6 +37,3 @@ https://blog.csdn.net/Taobaojishu/article/details/108744428
 
 推荐系统之EGES
 https://blog.csdn.net/weixin_35154281/article/details/117396048
-
-
-

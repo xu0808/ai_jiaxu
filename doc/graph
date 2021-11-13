@@ -1,5 +1,33 @@
+【doc】
+1、图神经网络总结
+https://blog.csdn.net/eagleuniversityeye/article/details/108772280
+
+【src】
 1、sage 和 gat源码
 https://github.com/bubblezhong/Graph
 
 2、eges源码：
 EGES-master
+
+
+
+
+【Graph Embedding】
+1、Graph Embedding
+node2vec原理介绍及其spark实现
+https://zhuanlan.zhihu.com/p/122704411
+
+graph embedding 使用方法
+https://www.cnblogs.com/Allen-rg/p/11468573.html
+
+学习聚合函数 GraphSAGE
+https://blog.csdn.net/weixin_44413191/article/details/109008096
+
+
+【大厂实践】
+1、大规模图算法在京东广告的实践
+https://blog.csdn.net/rlnLo2pNEfx9c/article/details/117608234
+2、spark的图计算
+生产环境请关注api graphX https://spark.apache.org/graphx/
+Spark GraphX源码分析
+https://endymecy.gitbooks.io/spark-graphx-source-analysis/content/

@@ -87,7 +87,7 @@ class GraphSageUnsupervised(GraphSageBase):
         neg_loss = tf.multiply(self.neg_weight, neg_losse_sum)
 
         batch_loss = tf.add(pos_loss, neg_loss)
-        loss = tf.divide(batch_loss, embA.shape[0])
+        loss = tf.divide(batch_loss, embABN.shape[0])
         self.add_loss(loss)
         return embABN
 

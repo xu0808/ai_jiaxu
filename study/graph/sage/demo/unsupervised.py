@@ -17,8 +17,8 @@ NEG_WEIGHT = 1.0
 # training parameters
 BATCH_SIZE = 512
 NEG_SIZE = 20
-TRAINING_STEPS = 100
-LEARNING_RATE = 0.00001
+TRAINING_STEPS = 1000
+LEARNING_RATE = 0.05
 
 
 def generate_training_minibatch(adj_mat_dict, batch_size, sample_sizes, neg_size):
