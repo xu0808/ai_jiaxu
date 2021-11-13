@@ -6,63 +6,58 @@
 import numpy as np
 import networkx as nx
 import tensorflow as tf
+from tensorflow.keras.layers import Dense, LeakyReLU, Lambda, Concatenate
+# import tensorflow.debugging.Assert
 
-
+# 卷积操作类
 class Convolve(tf.keras.Model):
 
     def __init__(self, hidden_channels):
         super(Convolve, self).__init__()
-        self.Q = tf.keras.layers.Dense(units=hidden_channels, activation=tf.keras.layers.LeakyReLU())
-        self.W = tf.keras.layers.Dense(units=hidden_channels, activation=tf.keras.layers.LeakyReLU())
+        # 聚合前每个邻居节点需经过的dense层
+        self.Q = Dense(units=hidden_channels, activation=LeakyReLU())
+        # 邻居节点聚合后的emb与目标节点emb拼接后需经过的dense层
+        self.W = Dense(units=hidden_channels, activation=LeakyReLU())
 
     def call(self, inputs):
         # embeddings.shape = (batch, node number, in_channels)
-        embeddings = inputs[0]
-        tf.debugging.Assert(tf.equal(tf.shape(tf.shape(embeddings))[0], 3), [embeddings.shape])
+        # 所有节点的Embedding
+        embs = inputs[0]
         # weights.shape = (node number, node number)
+        # 所有边权重
         weights = inputs[1]
-        tf.debugging.Assert(tf.equal(tf.shape(tf.shape(weights))[0], 2), [weights.shape])
-        tf.debugging.Assert(tf.equal(tf.shape(weights)[0], tf.shape(weights)[1]), [weights.shape])
-        tf.debugging.Assert(tf.equal(tf.shape(embeddings)[1], tf.shape(weights)[0]), [weights.shape])
-        # neighbor_set.shape = (node number, neighbor number)
+        # neighbor_set.shape = (node number, neighbor number)  ==> (节点数，邻居数)
+        # 针对每个节点采样的邻居节点id集合
         neighbor_set = inputs[2]
-        tf.debugging.Assert(tf.equal(tf.shape(tf.shape(neighbor_set))[0], 2), [neighbor_set.shape])
         # neighbor_embeddings.shape = (batch, node number, neighbor number, in channels)
-        # gather from tensor of dim (node number, batch, in_channel)
-        # with indices of dim (node number, neighbor num, 1)
-        # to get tensor of dim (node number, neighor num, batch, in_channel)
-        # transpose to get tensor of dim (batch, node_number, neighbor num, in channel)
-        neighbor_embeddings = tf.keras.layers.Lambda(lambda x, neighbor_set:
-                                                     tf.transpose(
-                                                         tf.gather_nd(
-                                                             tf.transpose(x, (1, 0, 2)),
-                                                             tf.expand_dims(neighbor_set, axis=-1)
-                                                         ),
-                                                         (2, 0, 1, 3)
-                                                     ),
-                                                     arguments={'neighbor_set': neighbor_set}
-                                                     )(embeddings)
+        gather_nd = tf.gather_nd(tf.transpose(embs, (1, 0, 2)), tf.expand_dims(neighbor_set, axis=-1))
+        neighbor_embs = tf.transpose(gather_nd, (2, 0, 1, 3))
+
         # neighbor_hiddens.shape = (batch, node_number, neighbor number, hidden channels)
-        neighbor_hiddens = self.Q(neighbor_embeddings)
+        # 所有的邻居Embedding经过第一层dense层
+        neighbor_hiddens = self.Q(neighbor_embs)
         # indices.shape = (node_number, neighbor number, 2)
-        node_nums = tf.keras.layers.Lambda(
-            lambda x: tf.tile(tf.expand_dims(tf.range(tf.shape(x)[0]), axis=1), (1, tf.shape(x)[1])))(neighbor_set)
-        indices = tf.keras.layers.Lambda(lambda x: tf.stack(x, axis=-1))([node_nums, neighbor_set])
+        tf_range = tf.expand_dims(tf.range(tf.shape(neighbor_set)[0]), axis=1)
+        node_nums = tf.tile(tf_range, (1, tf.shape(neighbor_set)[1]))
+        # 所有邻居节点及其对应的目标节点id
+        indices = tf.stack([node_nums, neighbor_set], axis=-1)
         # neighbor weights.shape = (node number, neighbor number)
-        neighbor_weights = tf.keras.layers.Lambda(lambda x, indices: tf.gather_nd(x, indices),
-                                                  arguments={'indices': indices})(weights)
+        # 提取所有要计算的邻居边的权重
+        neighbor_weights = tf.gather_nd(weights, indices)
         # neighbor_weights.shape = (1, node number, neighbor number, 1)
-        neighbor_weights = tf.keras.layers.Lambda(lambda x: tf.expand_dims(tf.expand_dims(x, 0), -1))(neighbor_weights)
+        neighbor_weights = tf.expand_dims(tf.expand_dims(neighbor_weights, 0), -1)
         # weighted_sum_hidden.shape = (batch, node_number, hidden channels)
-        weighted_sum_hidden = tf.keras.layers.Lambda(
-            lambda x: tf.math.reduce_sum(x[0] * x[1], axis=2) / (tf.math.reduce_sum(x[1], axis=2) + 1e-6))(
-            [neighbor_hiddens, neighbor_weights])
+        # 对所有节点的邻居节点Embedding，根据其与目标节点的边的权重计算加权和
+        weighted_sum_hidden = tf.math.reduce_sum(neighbor_hiddens * neighbor_weights, axis=2) / (tf.math.reduce_sum(neighbor_weights, axis=2) + 1e-6)
         # concated_hidden.shape = (batch, node number, in_channels + hidden channels)
-        concated_hidden = tf.keras.layers.Concatenate(axis=-1)([embeddings, weighted_sum_hidden])
+        # 节点的原始Embedding与每个节点的邻居加权和Embedding拼接
+        concated_hidden = Concatenate(axis=-1)([embs, weighted_sum_hidden])
         # hidden_new.shape = (batch, node number, hidden_channels)
+        # 拼接后的Embedding经过第二层dense层
         hidden_new = self.W(concated_hidden)
         # normalized.shape = (batch, node number, hidden_channels)
-        normalized = tf.keras.layers.Lambda(lambda x: x / (tf.norm(x, axis=2, keepdims=True) + 1e-6))(hidden_new)
+        # 结果Embedding规范化
+        normalized = hidden_new / (tf.norm(hidden_new, axis=2, keepdims=True) + 1e-6)
         return normalized
 
 
@@ -71,28 +66,29 @@ class PinSage(tf.keras.Model):
     def __init__(self, hidden_channels, graph=None, edge_weights=None):
 
         # hidden_channels is list containing output channels of every convolve.
-        assert type(hidden_channels) is list
-        if graph is not None: assert type(graph) is nx.classes.graph.Graph
-        if edge_weights is not None: assert type(edge_weights) is list
         super(PinSage, self).__init__()
         # create convolves for every layer.
+        # 创建卷积层
         self.convs = list()
         for i in range(len(hidden_channels)):
             self.convs.append(Convolve(hidden_channels[i]))
         # get edge weights from pagerank. (from, to)
+        # 在原始图上计算PageRank权重
         self.edge_weights = self.pagerank(graph) if graph is not None else edge_weights
 
     def call(self, inputs):
 
         # embeddings.shape = (batch, node number, in channels)
+        # 所有节点的Embedding
         embeddings = inputs[0]
-        tf.debugging.Assert(tf.equal(tf.shape(embeddings)[1], tf.shape(self.edge_weights)[0]), [embeddings.shape])
         # sample_neighbor_num.shape = ()
+        # 邻居采样个数
         sample_neighbor_num = inputs[1]
-        tf.debugging.Assert(tf.equal(tf.shape(tf.shape(sample_neighbor_num))[0], 0), [sample_neighbor_num])
         # sample a fix number of neighbors according to edge weights.
         # neighbor_set.shape = (node num, neighbor num)
+        # 根据边的权重对邻居采样
         neighbor_set = tf.random.categorical(self.edge_weights, sample_neighbor_num)
+
         for conv in self.convs:
             embeddings = conv([embeddings, self.edge_weights, neighbor_set])
         return embeddings
