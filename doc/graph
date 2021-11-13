@@ -10,8 +10,6 @@ https://github.com/bubblezhong/Graph
 EGES-master
 
 
-
-
 【Graph Embedding】
 1、Graph Embedding
 node2vec原理介绍及其spark实现
@@ -23,7 +21,10 @@ https://www.cnblogs.com/Allen-rg/p/11468573.html
 学习聚合函数 GraphSAGE
 https://blog.csdn.net/weixin_44413191/article/details/109008096
 
+全面理解PinSage
+https://zhuanlan.zhihu.com/p/133739758
 
+https://github.com/breadbread1984/PinSage-tf2.0
 【大厂实践】
 1、大规模图算法在京东广告的实践
 https://blog.csdn.net/rlnLo2pNEfx9c/article/details/117608234
