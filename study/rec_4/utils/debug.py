@@ -1,9 +1,8 @@
 import os
 import pandas as pd
 
-
-data_dir = 'E:\\study\\deepshare\\rec_4\\data'
-tf_record_dir = 'E:\\study\\deepshare\\rec_4\\tf_record'
+data_dir = 'D:\\study\\deepshare\\rec_4\\data'
+tf_record_dir = 'D:\\study\\deepshare\\rec_4\\tf_record'
 
 
 # 数据文件
