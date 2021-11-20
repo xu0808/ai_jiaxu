@@ -1,10 +1,4 @@
 import tensorflow as tf
-import sys
-
-# 打印Python版本
-print("Python version: ", sys.version)
-print("Python version info: ", sys.version_info)
-
 
 # 检查tensorflow环境，打印版本
 print(tf.__version__)
