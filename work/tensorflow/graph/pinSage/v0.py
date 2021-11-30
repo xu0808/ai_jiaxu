@@ -6,8 +6,8 @@
 import numpy as np
 import networkx as nx
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, LeakyReLU, Lambda, Concatenate
-# import tensorflow.debugging.Assert
+from tensorflow.keras.layers import Dense, LeakyReLU, Concatenate
+
 
 # 卷积操作类
 class Convolve(tf.keras.Model):
@@ -48,7 +48,8 @@ class Convolve(tf.keras.Model):
         neighbor_weights = tf.expand_dims(tf.expand_dims(neighbor_weights, 0), -1)
         # weighted_sum_hidden.shape = (batch, node_number, hidden channels)
         # 对所有节点的邻居节点Embedding，根据其与目标节点的边的权重计算加权和
-        weighted_sum_hidden = tf.math.reduce_sum(neighbor_hiddens * neighbor_weights, axis=2) / (tf.math.reduce_sum(neighbor_weights, axis=2) + 1e-6)
+        weighted_sum_hidden = tf.math.reduce_sum(neighbor_hiddens * neighbor_weights, axis=2) / (
+                tf.math.reduce_sum(neighbor_weights, axis=2) + 1e-6)
         # concated_hidden.shape = (batch, node number, in_channels + hidden channels)
         # 节点的原始Embedding与每个节点的邻居加权和Embedding拼接
         concated_hidden = Concatenate(axis=-1)([embs, weighted_sum_hidden])
@@ -64,15 +65,11 @@ class Convolve(tf.keras.Model):
 class PinSage(tf.keras.Model):
 
     def __init__(self, hidden_channels, graph=None, edge_weights=None):
-
-        # hidden_channels is list containing output channels of every convolve.
         super(PinSage, self).__init__()
-        # create convolves for every layer.
-        # 创建卷积层
+        # 创建卷积层(hidden_channels:每层隐藏层输出维度)
         self.convs = list()
         for i in range(len(hidden_channels)):
             self.convs.append(Convolve(hidden_channels[i]))
-        # get edge weights from pagerank. (from, to)
         # 在原始图上计算PageRank权重
         self.edge_weights = self.pagerank(graph) if graph is not None else edge_weights
 
@@ -94,29 +91,34 @@ class PinSage(tf.keras.Model):
         return embeddings
 
     def pagerank(self, graph, damp_rate=0.2):
-
-        # node id must from 0 to any nature number.
+        node_num = len(graph.nodes)
+        # 节点清单
         node_ids = sorted([id for id in graph.nodes])
-        assert node_ids == list(range(len(node_ids)))
-        # adjacent matrix.
-        weights = np.zeros((len(graph.nodes), len(graph.nodes),), dtype=np.float32)
+        # 节点清单必须是从0开始的完整序列
+        assert node_ids == list(range(node_num))
+        # 邻接矩阵
+        weights = np.zeros((node_num, node_num,), dtype=np.float32)
         for f in graph.nodes:
             for t in list(graph.adj[f]):
+                # 边的标记
                 weights[f, t] = 1.
         weights = tf.constant(weights)
-        # normalize adjacent matrix line by line.
+        # 邻接矩阵正则化(行内平均)
         line_sum = tf.math.reduce_sum(weights, axis=1, keepdims=True) + 1e-6
         normalized = weights / line_sum
-        # dampping vector.
-        dampping = tf.ones((len(graph.nodes),), dtype=tf.float32)
-        dampping = dampping / tf.constant(len(graph.nodes), dtype=tf.float32)
-        dampping = tf.expand_dims(dampping, 0)  # line vector.
+        # 均值向量
+        damp_ones = tf.ones((node_num,), dtype=tf.float32)
+        # shape=(4,)
+        damp_avg = damp_ones / tf.constant(node_num, dtype=tf.float32)
+        # 添加维度 shape=(1, 4)
+        dampping = tf.expand_dims(damp_avg, 0)
         # learning pagerank.
         v = dampping
         while True:
             v_updated = (1 - damp_rate) * tf.linalg.matmul(v, normalized) + damp_rate * dampping
             d = tf.norm(v_updated - v)
-            if tf.equal(tf.less(d, 1e-4), True): break
+            if tf.equal(tf.less(d, 1e-4), True):
+                break
             v = v_updated
         # edge weight is pagerank.
         weights = weights * tf.tile(v, (tf.shape(weights)[0], 1))
