@@ -4,7 +4,6 @@
 
 import os
 import tensorflow as tf
-import numpy as np
 import reader
 
 
@@ -50,7 +49,7 @@ def write(file_name, keys, types, feature_data):
         writer.close()
 
 
-def read(file_name, keys, types, batch_size=20):
+def read(file_name, keys, types, batch_size=200):
     """
     数据写入tf_record
     Args:
@@ -90,14 +89,21 @@ def read_recod():
     types = [tf.int64, tf.int64, tf.int64]
     # 分批读出每个特征
     data_set = read('rating', keys, types)
-    size = 0
+    data_total = 0
+    batch_num = 0
     for user_id, movie_id, rating in data_set:
-        if size == 0:
+        if batch_num == 0:
             print('user_id = ', user_id)
             print('movie_id = ', movie_id)
             print('rating = ', rating)
-        size += 1
-    print('data_set size = ', size)
+            batch_size = user_id.shape[0]
+        batch_num += 1
+        data_total += user_id.shape[0]
+
+    # 样本257488，每批200，共1288批
+    print('data_set batch_size = ', batch_size)
+    print('data_set batch_num = ', batch_num)
+    print('data_set data_total = ', data_total)
 
 
 if __name__ == '__main__':

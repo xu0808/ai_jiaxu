@@ -4,7 +4,7 @@ import numpy as np
 import tf_record
 import params_server
 
-batch_size = 12875
+batch_size = 20
 vector_dim = 16
 
 
@@ -26,8 +26,8 @@ def matrix_cf():
                 y_pre = tf.reduce_mean(user_id_emb * movie_id_emb, axis=1)
                 loss = tf.reduce_mean(tf.square(y_pre, y_true))
             grads = tape.gradient(loss, [user_id_emb, movie_id_emb])
-            user_id_emb -= grads[0] * 0.05
-            movie_id_emb -= grads[1] * 0.05
+            user_id_emb -= grads[0] * 0.5
+            movie_id_emb -= grads[1] * 0.5
             print('loss = ', loss.numpy())
 
 
