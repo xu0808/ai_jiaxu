@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
-# -*- 自动求导机制
+# 基于矩阵分解的embedding模型
+
 import tensorflow as tf
 import pandas as pd
 import os
 import tf_record
 import params_server
 import reader
-# 基于矩阵分解的embedding模型
 
 # 为了保证对齐，需要全量训练
 batch_size = 200
