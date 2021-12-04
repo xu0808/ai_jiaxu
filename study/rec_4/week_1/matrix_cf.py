@@ -1,12 +1,11 @@
 # -*- 自动求导机制
 import tensorflow as tf
-import numpy as np
 import tf_record
-import params_server
 # 基于矩阵分解的embedding模型
 
 batch_size = 200
 vector_dim = 16
+learning_rate = 0.5
 
 
 def train():
@@ -37,8 +36,8 @@ def train():
                 break
             # 梯度下降
             grads = tape.gradient(loss, [user_id_emb, movie_id_emb])
-            user_id_emb -= grads[0] * 0.5
-            movie_id_emb -= grads[1] * 0.5
+            user_id_emb -= grads[0] * learning_rate
+            movie_id_emb -= grads[1] * learning_rate
             batch_num += 1
 
     print('result -> epoch = %d, batch_num = %d, loss = %f' % (epoch, batch_num, loss.numpy()))
