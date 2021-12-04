@@ -28,13 +28,22 @@ def train():
                 tape.watch([user_id_emb, movie_id_emb])
                 y_pre = tf.reduce_mean(user_id_emb * movie_id_emb, axis=1)
                 loss = tf.reduce_mean(tf.square(y_pre, y_true))
+
+            # 损失计算
+            if batch_num % 100 == 0:
+                print('epoch = %d, batch_num = %d, loss = %f' % (epoch, batch_num, loss.numpy()))
+            # 最小损失推出
+            if loss < 0.000001:
+                break
+            # 梯度下降
             grads = tape.gradient(loss, [user_id_emb, movie_id_emb])
             user_id_emb -= grads[0] * 0.5
             movie_id_emb -= grads[1] * 0.5
-
-            if batch_num % 100 == 0:
-                print('epoch = %d, batch_num = %d, loss = %f' % (epoch, batch_num, loss.numpy()))
             batch_num += 1
+
+    print('result -> epoch = %d, batch_num = %d, loss = %f' % (epoch, batch_num, loss.numpy()))
+    print('user_id_emb top 5', user_id_emb[0:5])
+    print('movie_id_emb top 5', movie_id_emb[0:5])
 
 
 if __name__ == "__main__":
