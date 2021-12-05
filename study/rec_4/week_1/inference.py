@@ -6,11 +6,9 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 import os
-import params_server
 import tf_record
 import reader
-# pip install faiss-cpu
-import faiss
+import sim_top_n
 
 np.printoptions()
 
@@ -54,25 +52,7 @@ if __name__ == "__main__":
 
     # 2、近邻查找
     # 2-1、i2i
-    emb_i2i = np.array(movie_emb).astype(np.float32)
-    index_i2i = faiss.IndexFlatL2(emb_i2i.shape[1])
-    index_i2i.add(emb_i2i)
-    # d top5的距离数组，i top5的索引数组
-    # 基础验证最近的为自己距离为0
-    d, i = index_i2i.search(emb_i2i, 6)
-    sim_dic_i2i = {}
-    for index in range(i.shape[0]):
-        top5 = np.array(movie_key)[i[index]]
-        # 第一个为自己，后面为近邻
-        sim_dic_i2i[top5[0]] = top5[1:]
+    sim_dic_i2i = sim_top_n.sim_i2i(movie_key, movie_emb)
     # 2-2、u2i
-    index_u2i = faiss.IndexFlatL2(emb_i2i.shape[1])
-    index_u2i.add(emb_i2i)
-    emb_u2i = np.array(user_emb).astype(np.float32)
-    # 为每个用户查找5个电影
-    d, i = index_u2i.search(emb_u2i, 5)
-    sim_dic_u2i = {}
-    for index in range(i.shape[0]):
-        top5 = np.array(movie_key)[i[index]]
-        sim_dic_u2i[user_key[index]] = top5
+    sim_dic_u2i = sim_top_n.sim_u2i(user_key, user_emb, movie_key, movie_emb)
     print('i2i and u2i finish!')

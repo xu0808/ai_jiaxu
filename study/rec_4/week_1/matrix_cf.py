@@ -17,7 +17,7 @@ epochs = 1000
 
 
 def train():
-    ps = params_server.PS(vector_dim=vector_dim)
+    ps = params_server.CacheServer(vector_dim=vector_dim)
     # 1、模型训练
     for epoch in range(epochs):
         print('Start of epoch %d' % (epoch,))

@@ -10,7 +10,7 @@ import time
 
 
 # 单例模式
-class PS:
+class CacheServer:
     def __init__(self, vector_dim):
         np.random.seed(2020)
         self.cache = cacheout.Cache(maxsize=100000, ttl=0, timer=time.time, default=None)
@@ -43,7 +43,7 @@ class PS:
 
 if __name__ == "__main__":
     # 默认不过期
-    ps = PS(vector_dim=2)
+    ps = CacheServer(vector_dim=2)
     ps.cache.set('-6990346318830052955', {'data': {}}, ttl=1)
     assert ps.cache.get('-6990346318830052955') == {'data': {}}
     time.sleep(1)
