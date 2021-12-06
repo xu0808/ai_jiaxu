@@ -2,7 +2,7 @@
 # coding: utf-8
 import os
 import pandas as pd
-import numpy as np
+from collections import defaultdict
 
 data_dir = 'D:\\study\\rec_4\\data\\2\\data'
 tf_record_dir = os.path.join(data_dir, 'tf_record')
@@ -21,9 +21,18 @@ def read_log():
     print('click_log_df:', click_log_df[:5])
     click_log = click_log_df.values[:, 0:3]
     print('click_log:', click_log[0:5])
-    # 添加分类列
-    click_log = np.c_[click_log, [categories[i] for i in click_log[:, 1]]]
-    print('click_log:', click_log[0:5])
+
+    # 样本统计
+    user_item_dict = defaultdict(list)
+    item_user_dict = defaultdict(list)
+    user_item_ts = defaultdict(int)
+    for i in range(click_log.shape[0]):
+        [user_id, item_id, ts] = click_log[i]
+        user_item_dict[user_id].append(item_id)
+        item_user_dict[item_id].append(user_id)
+        user_item_ts['%d_%d' % (user_id, item_id)] = ts
+
+    return user_item_dict, item_user_dict, user_item_ts, categories
 
 
 if __name__ == '__main__':
