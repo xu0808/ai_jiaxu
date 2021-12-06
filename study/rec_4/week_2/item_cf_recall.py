@@ -7,17 +7,9 @@
 """
 
 import math
-import traceback
 import numpy as np
-import pandas as pd
-import warnings
 from collections import defaultdict
-import json
-
 import reader_2
-
-
-#
 
 
 def item_cf_sim(user_item_dict, user_item_ts, categories, item_user_dict, top_n=20):
@@ -30,7 +22,7 @@ def item_cf_sim(user_item_dict, user_item_ts, categories, item_user_dict, top_n=
      return  i2i_sim 物品相似度列表
     """
     # 计算物品相似度
-    i2i_sim = defaultdict(dict)
+    i2i_sim_0 = defaultdict(dict)
     # 一、逐个用户计算物品相似度
     for user, items in user_item_dict.items():
         # 在基于商品的协同过滤优化的时候可以考虑时间因素
@@ -46,16 +38,19 @@ def item_cf_sim(user_item_dict, user_item_ts, categories, item_user_dict, top_n=
                 # 2、两篇文章的类别的权重，其中类别相同权重大
                 type_weight = 1.0 if categories[i] == categories[j] else 0.7
                 # 3、考虑多种因素的权重计算最终的文章之间的相似度
-                i2i_sim[i].setdefault(j, 0)
-                i2i_sim[i][j] += ts_weight * type_weight / math.log(len(items) + 1)
+                i2i_sim_0[i].setdefault(j, 0)
+                i2i_sim_0[i][j] += ts_weight * type_weight / math.log(len(items) + 1)
 
     # 二、逐个用户计算物品相似度
-    for i, sims in i2i_sim.items():
+    i2i_sim = {}
+    for i, sims in i2i_sim_0.items():
         i_count = len(item_user_dict[i])
         tmp_sim = {}
         for j, w in sims.items():
             tmp_sim[j] = w / math.sqrt(i_count * len(item_user_dict[j]))
-        i2i_sim[i] = sorted(tmp_sim.items(), key=lambda kv: (kv[1], kv[0]))[:top_n]
+        # 取相似商品topN
+        i2i_sim[i] = sorted(tmp_sim.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)[:top_n]
+        print(i, i2i_sim_0[i])
 
 
 if __name__ == '__main__':
