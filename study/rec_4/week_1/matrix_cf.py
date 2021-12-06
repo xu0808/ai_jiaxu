@@ -6,8 +6,8 @@ import tensorflow as tf
 import pandas as pd
 import os
 import tf_record
-import params_server
 import reader
+import cache_server
 
 # 为了保证对齐，需要全量训练
 batch_size = 200
@@ -17,7 +17,7 @@ epochs = 1000
 
 
 def train():
-    ps = params_server.CacheServer(vector_dim=vector_dim)
+    ps = cache_server.CacheServer(vector_dim=vector_dim)
     # 1、模型训练
     for epoch in range(epochs):
         print('Start of epoch %d' % (epoch,))

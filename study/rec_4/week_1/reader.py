@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import numpy as np
 
-data_dir = 'D:\\study\\rec_4\\data'
+data_dir = 'D:\\study\\rec_4\\data\\1'
 tf_record_dir = os.path.join(data_dir, 'tf_record')
 
 
