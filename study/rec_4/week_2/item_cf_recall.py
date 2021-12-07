@@ -39,7 +39,7 @@ def item_cf_sim(user_item_dict, user_item_ts, categories, item_user_dict, top_n=
                 type_weight = 1.0 if categories[i] == categories[j] else 0.7
                 # 3、考虑多种因素的权重计算最终的文章之间的相似度
                 i2i_sim_0[i].setdefault(j, 0)
-                i2i_sim_0[i][j] += ts_weight * type_weight / math.log(len(items) + 1)
+                i2i_sim_0[i][j] += round(ts_weight * type_weight / math.log(len(items) + 1), 4)
 
     # 二、逐个用户计算物品相似度
     i2i_sim = {}
@@ -47,10 +47,10 @@ def item_cf_sim(user_item_dict, user_item_ts, categories, item_user_dict, top_n=
         i_count = len(item_user_dict[i])
         tmp_sim = {}
         for j, w in sims.items():
-            tmp_sim[j] = w / math.sqrt(i_count * len(item_user_dict[j]))
-        # 取相似商品topN
+            tmp_sim[j] = round(w/math.sqrt(i_count * len(item_user_dict[j])), 4)
+        # 取相似商品评分topN
         i2i_sim[i] = sorted(tmp_sim.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)[:top_n]
-        print(i, i2i_sim_0[i])
+        print(i, i2i_sim[i])
 
 
 if __name__ == '__main__':
