@@ -23,7 +23,12 @@ def user_cf_sim(user_item_dict, user_item_ts, item_user_dict, top_n=20):
     # 计算用户相似度
     u2u_sim_0 = defaultdict(dict)
     for item, users in item_user_dict.items():
+        index = 0
         for i in users:
+            index += 1
+            # 内存不足只能测试200个用户
+            if index > 200:
+                break
             num_i = len(user_item_dict[i])
             num_user = len(users)
             for j in users:
