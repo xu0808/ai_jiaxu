@@ -3,9 +3,10 @@
 import os
 import pandas as pd
 import numpy as np
+import tensorflow as tf
+import tf_record
 
 data_dir = 'D:\\study\\rec_4\\data\\1'
-tf_record_dir = os.path.join(data_dir, 'tf_record')
 
 
 def read_rating():
@@ -36,5 +37,38 @@ def read_rating():
     return rating_hash
 
 
+
+def write_recod():
+    ratings_data = read_rating()
+    keys = ['user_id', 'movie_id', 'rating']
+    types = ['int64', 'int64', 'int64']
+    tf_record.write('rating', keys, types, ratings_data)
+
+
+def read_recod():
+    keys = ['user_id', 'movie_id', 'rating']
+    types = [tf.int64, tf.int64, tf.int64]
+    # 分批读出每个特征
+    data_set = tf_record.read('rating', keys, types)
+    data_total = 0
+    batch_num = 0
+    for user_id, movie_id, rating in data_set:
+        if batch_num == 0:
+            print('user_id = ', user_id)
+            print('movie_id = ', movie_id)
+            print('rating = ', rating)
+            batch_size = user_id.shape[0]
+        batch_num += 1
+        data_total += user_id.shape[0]
+
+    # 样本257488，每批200，共1288批
+    print('data_set batch_size = ', batch_size)
+    print('data_set batch_num = ', batch_num)
+    print('data_set data_total = ', data_total)
+
+
 if __name__ == '__main__':
-    read_rating()
+    # read_rating()
+    # write_recod()
+    read_recod()
+

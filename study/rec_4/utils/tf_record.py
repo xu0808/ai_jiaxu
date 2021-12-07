@@ -4,7 +4,8 @@
 
 import os
 import tensorflow as tf
-import reader
+
+tf_record_dir = 'D:\\study\\rec_4\\data\\tf_record'
 
 
 def bytes_feature(value):
@@ -32,7 +33,7 @@ def write(file_name, keys, types, feature_data):
         feature_data 特征数据（二维数组，逐行写如，每列对应key和type）
     """
     # 数据文件
-    tf_dir = os.path.join(reader.tf_record_dir, file_name)
+    tf_dir = os.path.join(tf_record_dir, file_name)
     with tf.io.TFRecordWriter(tf_dir) as writer:
         # 需要逐行写入
         for line in feature_data:
@@ -68,47 +69,10 @@ def read(file_name, keys, types, batch_size=200):
         result = tf.io.parse_single_example(example_string, feature_desc)
         return [result[key] for key in keys]
 
-    tf_dir = os.path.join(reader.tf_record_dir, file_name)
+    tf_dir = os.path.join(tf_record_dir, file_name)
     tf_dataset_0 = tf.data.TFRecordDataset(tf_dir)
     tf_dataset = tf_dataset_0.map(_parse_example)
     tf_dataset = tf_dataset.batch(batch_size)
     # 高效批处理
     tf_dataset = tf_dataset.prefetch(tf.data.experimental.AUTOTUNE)
     return tf_dataset
-
-
-def write_recod():
-    ratings_data = reader.read_rating()
-    keys = ['user_id', 'movie_id', 'rating']
-    types = ['int64', 'int64', 'int64']
-    write('rating', keys, types, ratings_data)
-
-
-def read_recod():
-    keys = ['user_id', 'movie_id', 'rating']
-    types = [tf.int64, tf.int64, tf.int64]
-    # 分批读出每个特征
-    data_set = read('rating', keys, types)
-    data_total = 0
-    batch_num = 0
-    for user_id, movie_id, rating in data_set:
-        if batch_num == 0:
-            print('user_id = ', user_id)
-            print('movie_id = ', movie_id)
-            print('rating = ', rating)
-            batch_size = user_id.shape[0]
-        batch_num += 1
-        data_total += user_id.shape[0]
-
-    # 样本257488，每批200，共1288批
-    print('data_set batch_size = ', batch_size)
-    print('data_set batch_num = ', batch_num)
-    print('data_set data_total = ', data_total)
-
-
-if __name__ == '__main__':
-    # write_recod()
-    read_recod()
-
-
-

@@ -7,7 +7,6 @@ import pandas as pd
 from collections import defaultdict
 
 data_dir = 'D:\\study\\rec_4\\data\\2\\data'
-tf_record_dir = os.path.join(data_dir, 'tf_record')
 
 
 def read_log():
