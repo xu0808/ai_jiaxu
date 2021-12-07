@@ -27,21 +27,23 @@ def item_cf_sim(user_item_dict, user_item_ts, categories, item_user_dict, top_n=
     for user, items in user_item_dict.items():
         # 在基于商品的协同过滤优化的时候可以考虑时间因素
         for i in items:
+            ts_i = user_item_ts['%d_%d' % (user, i)]
+            cat_i = categories[i]
+            num_item = len(items)
             for j in items:
                 if i == j:
                     continue
                 # 1、点击时间权重，其中的参数可以调节，点击时间相近权重大，相远权重小
-                ts_i = user_item_ts['%d_%d' % (user, i)]
                 ts_j = user_item_ts['%d_%d' % (user, j)]
                 ts_weight = np.exp(0.7 ** np.abs(ts_i - ts_j))
 
                 # 2、两篇文章的类别的权重，其中类别相同权重大
-                type_weight = 1.0 if categories[i] == categories[j] else 0.7
+                type_weight = 1.0 if cat_i == categories[j] else 0.7
                 # 3、考虑多种因素的权重计算最终的文章之间的相似度
                 i2i_sim_0[i].setdefault(j, 0)
-                i2i_sim_0[i][j] += round(ts_weight * type_weight / math.log(len(items) + 1), 4)
+                i2i_sim_0[i][j] += round(ts_weight * type_weight / math.log(num_item + 1), 4)
 
-    # 二、逐个用户计算物品相似度
+    # 二、合并物品相似度
     i2i_sim = {}
     for i, sims in i2i_sim_0.items():
         i_count = len(item_user_dict[i])
