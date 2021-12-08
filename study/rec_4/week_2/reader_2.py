@@ -14,6 +14,7 @@ data_dir = 'D:\\study\\rec_4\\data\\2\\data'
 features = 'user_id,article_id,environment,region'.split(',')
 label = 'label'
 
+
 def read_log():
     # 数据文件
     articles_file = os.path.join(data_dir, 'articles.csv')
@@ -76,13 +77,13 @@ def feature():
 def write_recod():
     feature_hash = feature()
     keys = features + [label]
-    types = ['int64']*5
+    types = ['int64']*4 + ['float']
     tf_record.write('click_log', keys, types, feature_hash)
 
 
 def read_recod():
     keys = features + [label]
-    types = [tf.int64]*5
+    types = [tf.int64]*4 + [tf.float32]
     # 分批读出每个特征
     data_set = tf_record.read('click_log', keys, types)
     data_total = 0

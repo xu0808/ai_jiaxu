@@ -6,7 +6,7 @@ import tensorflow as tf
 import pandas as pd
 import os
 import tf_record
-import reader
+import reader_1
 import cache_server
 
 # 为了保证对齐，需要全量训练
@@ -65,7 +65,7 @@ def train():
 
     emb_df = pd.DataFrame({'key': keys, 'vec': values})
     # 数据文件
-    emb_file = os.path.join(reader.data_dir, 'rating_emb.csv')
+    emb_file = os.path.join(reader_1.data_dir, 'rating_emb.csv')
     emb_df.to_csv(emb_file, index=False, sep=',')
 
 
