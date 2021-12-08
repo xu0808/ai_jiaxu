@@ -37,7 +37,6 @@ def read_rating():
     return rating_hash
 
 
-
 def write_recod():
     ratings_data = read_rating()
     keys = ['user_id', 'movie_id', 'rating']
