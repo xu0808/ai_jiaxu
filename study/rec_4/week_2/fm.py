@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 # FM特征交叉
+# 可以对比TensorFlow2.0 实现FM
+# https://blog.csdn.net/qq_34333481/article/details/103919923
 
 import tensorflow as tf
 import pandas as pd
@@ -14,7 +16,7 @@ batch_size = 200
 epochs = 200
 
 weight_dim = 17  # 16 + 1
-learning_rate = 0.5
+learning_rate = 0.05
 feature_dim = 4
 
 
@@ -51,13 +53,14 @@ def train():
             article_id_emb = tf.constant(ps.pull(article_id.numpy()))
             environment_emb = tf.constant(ps.pull(environment.numpy()))
             region_emb = tf.constant(ps.pull(region.numpy()))
-            features = [user_id_emb, article_id_emb, environment_emb, region_emb]
             y_true = tf.constant(label, dtype=tf.float32)
-            # 所有特征向量拼接
-            inputs = tf.concat(features, 1)
-            y_pred = fm_fn(inputs)
             with tf.GradientTape() as tape:
+                features = [user_id_emb, article_id_emb, environment_emb, region_emb]
+                # 【所有参数计算必须位于tape.watch后】
                 tape.watch(features)
+                # 所有特征向量拼接
+                inputs = tf.concat(features, 1)
+                y_pred = fm_fn(inputs)
                 loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=y_pred, labels=y_true))
             # 损失计算
             if batch_num % 100 == 0:
