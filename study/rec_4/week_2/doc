@@ -1,3 +1,4 @@
+【课件】
 1、ItemCF/UserCF代码
 https://jishuin.proginn.com/p/763bfbd394b3
 
@@ -6,6 +7,9 @@ UserCF的主要思想是：给用户推荐与其相似的用户喜欢的的物�
 1、统计两两物品之间的共现次数，即「用户同时喜欢两个物品」；
 2、通过Jaccard距离、余弦相似度等方式计算两个物品的相似性
 
-
 FM特征交叉源码:
 project_code\testapp\model
+
+【笔记】
+FM因子分解机的原理、公式推导、实现和应用
+https://zhuanlan.zhihu.com/p/145436595

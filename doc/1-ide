@@ -1,10 +1,6 @@
 【GitHub】
 https://github.com  使用网易邮箱登录
 git@github.com:xu0808/ai_jiaxu.git
-解决无法登陆问题：
-C:\Windows\System32\drivers\etc
-140.82.114.3 github.com
-199.232.69.194 github.global.ssl.fastly.net
 
 1、生成证书
 ssh-keygen -t rsa -C "haohaoqiankunxu@163.com"
@@ -24,6 +20,19 @@ https://www.githubs.cn/post/git-tutorial
 
 6、Github 简明教程
 https://www.runoob.com/w3cnote/git-guide.html
+
+【GitHub网络问题】
+一、添加hosts
+C:\Windows\System32\drivers\etc
+1、去https://www.ipaddress.com 查看真实IP地址
+2、添加hosts
+140.82.113.4 github.com
+199.232.69.194 github.global.ssl.fastly.net
+185.199.108.133 raw.githubusercontent.com
+二、镜像代理
+https://hub.fastgit.org(高效)
+https://github.com.cnpmjs.org
+
 
 【spark开发环境】
 一、java
