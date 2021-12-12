@@ -2,6 +2,12 @@
 # coding: utf-8
 # Python手动实现FM
 # diabetes皮马人糖尿病数据集FM二分类
+# FM算法解析及Python代码实现
+# https://www.jianshu.com/p/bb2bce9135e4
+# FM(因子分解机)模型算法：稀疏数据下的特征二阶组合问题（个性化特征）
+# 1、应用矩阵分解思想，引入隐向量构造FM模型方程
+# 2、目标函数（损失函数复合FM模型方程）的最优问题：链式求偏导
+# 3、SGD优化目标函数
 
 import numpy as np
 import random
@@ -11,6 +17,13 @@ from random import normalvariate  # 正态分布
 from datetime import datetime
 import pandas as pd
 import numpy as np
+from sklearn.metrics import roc_auc_score, confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.base import BaseEstimator, ClassifierMixin
+from collections import Counter
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
 
 # 数据文件
 data_dir = 'D:\\study\\rec_4\\data\\2\\fm'
@@ -42,129 +55,109 @@ def preprocess(data):
     # 取特征(8个特征)
     feature = np.array(data.iloc[:, :-1])
     # 取标签并转化为 +1，-1
-    label = data.iloc[:, -1].map(lambda x: 1 if x == 1 else -1)  
+    label = data.iloc[:, -1].map(lambda x: 1 if x == 1 else 0)
 
     # 将数组按行进行归一化
     # 特征的最大值，特征的最小值
-    zmax, zmin = feature.max(axis=0), feature.min(axis=0)  
+    zmax, zmin = feature.max(axis=0), feature.min(axis=0)
     feature = (feature - zmin) / (zmax - zmin)
     label = np.array(label)
     return feature, label
 
 
-def sigmoid(inx):
-    return 1.0 / (1 + np.exp(-inx))
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
 
 
-def train(feature, label, k, iter=10, alpha=0.01):
-    """
-    # 训练FM模型
-    :param feature:特征数组
-    :param label: 标签数组
-    :param k: 向量维数
-    :param iter: 迭代次数
-    :return: 常数项w_0, 一阶特征系数w, 二阶交叉特征系数v
-    """
-    # 数组转矩阵
-    feature_matrix = mat(feature)
-    # 矩阵的行列数，即样本数m和特征数n
-    m, n = shape(feature_matrix)
-
-    # 初始化参数
-    # 常数项
-    w_0 = 0
-    # 一阶特征的系数
-    w = zeros((n, 1))
-    # 辅助向量(n*k)，二阶交叉特征的系数
-    v = normalvariate(0, 0.2) * ones((n, k))
-
-    for it in range(iter):
-        # 随机优化，每次只使用一个样本
-        for t in range(m):
-            # 一、前向传播
-            x = feature_matrix[t]
-            # 二阶项的计算
-            # 每个样本(1*n)x(n*k),得到k维向量（FM化简公式大括号内的第一项）
-            inter_1 = multiply(x * v, x * v)
-            # 二阶交叉项计算，得到k维向量（FM化简公式大括号内的第二项）
-            inter_2 = multiply(x, x) * multiply(v, v)
-            # 二阶交叉项计算完成（FM化简公式的大括号外累加）
-            interaction = sum(inter_1 - inter_2) / 2.
-
-            # FM的全部项之和
-            p = w_0 + x * w + interaction
-
-            # 二、反向求导
-            # tmp迭代公式的中间变量，便于计算
-            y = label[t]
-            tmp = 1 - sigmoid(y * p[0, 0])
-            # 常数项更新
-            w_0 += alpha * tmp * y
-            for i in range(n):
-                x_0 = x[0, i]
-                if x_0 != 0:
-                    # 一阶特征的系数更新
-                    w[i, 0] += alpha * tmp * y * x_0
-                    for j in range(k):
-                        # 二阶交叉特征的系数更新
-                        v[i, j] += alpha * tmp * y * (x_0 * inter_1[0, j] - v[i, j] * x_0 * x_0)
-
-        # 计算损失函数的值
-        if it % 10 == 0:
-            l = loss(predict(feature, w_0, w, v), label)
-            print('第{}次迭代后的损失为{}'.format(it, l))
-
-    return w_0, w, v
+# 对每一个样本计算损失
+def logit(y, y_hat):
+    if y_hat == 'nan':
+        return 0
+    else:
+        return np.log(1 + np.exp(-y * y_hat))
 
 
-# 损失函数
-def loss(y_pre, label):
-    m = len(y_pre)
-    l = 0.0
-    for i in range(m):
-        l -= log(sigmoid(y_pre[i] * label))
-    return l
+def df_logit(y, y_hat):
+    return sigmoid(-y * y_hat) * (-y)
 
 
-# 预测
-def predict(feature, w_0, w, v):
-    # 数组转矩阵
-    feature_matrix = mat(feature)
-    m = np.shape(feature_matrix)[0]
-    result = []
-    for t in range(m):
-        x = feature_matrix[t]
+class FM(BaseEstimator):
+    def __init__(self, k=5, learning_rate=0.01, iternum=2):
+        self.w0 = None
+        self.w = None
+        self.v = None
+        self.k = k
+        self.alpha = learning_rate
+        self.iternum = iternum
+
+    def call(self, x):
         # 每个样本(1*n)x(n*k),得到k维向量（FM化简公式大括号内的第一项）
-        inter_1 = multiply(x * v, x * v)
+        inter_1 = (x.dot(self.v)) ** 2
         # 二阶交叉项计算，得到k维向量（FM化简公式大括号内的第二项）
-        inter_2 = multiply(x, x) * multiply(v, v)
+        inter_2 = (x ** 2).dot(self.v ** 2)
         # 二阶交叉项计算完成（FM化简公式的大括号外累加）
-        interaction = sum(inter_1 - inter_2) / 2.
-        # 计算预测的输出
-        p = w_0 + x * w + interaction
-        pre = sigmoid(p[0, 0])
-        result.append(pre)
-    return result
+        interaction = np.sum(inter_1 - inter_2) / 2.
+
+        y_hat = self.w0 + x.dot(self.w) + interaction
+        return y_hat[0]
+
+    def sgd(self, x, y):
+        m, n = np.shape(x)
+        # 初始化参数
+        self.w0 = 0
+        self.w = np.random.uniform(size=(n, 1))
+        # Vj是第j个特征的隐向量
+        # Vjf是第j个特征的隐向量表示中的第f维
+        self.v = np.random.uniform(size=(n, self.k))
+
+        for it in range(self.iternum):
+            total_loss = 0
+            # X[i]是第i个样本
+            for i in range(m):
+                y_hat = self.call(x=x[i])
+                # 计算logit损失函数值
+                total_loss += logit(y=y[i], y_hat=y_hat)
+                # 计算logit损失函数的外层偏导
+                loss = df_logit(y=y[i], y_hat=y_hat)
+
+                # 1、常数项梯度下降
+                # 公式中的w0求导，计算复杂度O(1)
+                loss_w0 = loss * 1
+                self.w0 = self.w0 - self.alpha * loss_w0
+
+                # X[i,j]是第i个样本的第j个特征
+                for j in range(n):
+                    if x[i, j] != 0:
+                        # 公式中的wi求导，计算复杂度O(n)
+                        loss_w = loss * x[i, j]
+                        self.w[j] = self.w[j] - self.alpha * loss_w
+                        # 公式中的vif求导，计算复杂度O(kn)
+                        for f in range(self.k):
+                            loss_v = loss * (x[i, j] * (x[i].dot(self.v[:, f])) - self.v[j, f] * x[i, j] ** 2)
+                            self.v[j, f] = self.v[j, f] - self.alpha * loss_v
+
+            print('iter={}, loss={:.4f}'.format(it + 1, total_loss / m))
+        return self
+
+    def predict(self, x):
+        # sigmoid阈值设置
+        predicts, threshold = [], 0.5
+        # 遍历测试集
+        for i in range(x.shape[0]):
+            # FM的模型方程
+            y_hat = self.call(x=x[i])
+            predicts.append(-1 if sigmoid(y_hat) < threshold else 1)
+        return np.array(predicts)
+
+    def fit(self, x, y):
+        if isinstance(x, pd.DataFrame):
+            x = np.array(x)
+            y = np.array(y)
+
+        return self.sgd(x, y)
 
 
-# 评估预测的准确性
-def accuracy(y_pre, label):
-    m = len(y_pre)
-    acc_num = 0
-    for i in range(m):
-        score_pre = y_pre[i]
-        y_true = label[i]
-        if float(score_pre) < 0.5 and y_true == -1.0:
-            acc_num += 1
-        elif float(y_pre[i]) >= 0.5 and y_true == 1.0:
-            acc_num += 1
-        else:
-            continue
-
-    return float(acc_num/m)
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     # 1、数据集切分
     # train_sample, test_sample = load_data(0.8)
     # 2、加载样本
@@ -172,17 +165,30 @@ if __name__ == '__main__':
     test_sample = pd.read_csv(test_file)
     x_train, y_train = preprocess(train_sample)
     x_test, y_test = preprocess(test_sample)
-    date_start = datetime.now()
 
-    print('开始训练')
-    bias, weight, vector = train(x_train, y_train, 4, 100, 0.01)
-    print('bias = ', bias)
-    print('weight = ', weight)
-    print('vector = ', vector)
-    predict_train_result = predict(mat(x_train), bias, weight, vector)  # 得到训练的准确性
-    print("'训练准确性为：%f" % (1 - accuracy(predict_train_result, y_train)))
-    print('训练用时为：%s' % (datetime.now() - date_start))
+    model = FM(k=10, learning_rate=0.001, iternum=2)
+    model.fit(x_train, y_train)
 
-    print("开始测试")
-    predict_test_result = predict(mat(x_test), bias, weight, vector)  # 得到训练的准确性
-    print("测试准确性为：%f" % (1 - accuracy(predict_test_result, y_test)))
+    y_pred = model.predict(x_train)
+    print('训练集roc: {:.2%}'.format(roc_auc_score(y_train, y_pred)))
+    print('混淆矩阵: \n', confusion_matrix(y_train, y_pred))
+
+    y_true = model.predict(x_test)
+
+    print('验证集roc: {:.2%}'.format(roc_auc_score(y_test, y_true)))
+    print('混淆矩阵: \n', confusion_matrix(y_test, y_true))
+
+    from sklearn.metrics import mean_squared_error
+    from sklearn.preprocessing import MinMaxScaler
+    from sklearn.metrics import recall_score
+    from sklearn.metrics import precision_score
+    from sklearn.metrics import accuracy_score
+
+    # 归一化测试集，返回[0,1]区间
+    x_test = MinMaxScaler().fit_transform(x_test)
+    val_predicts = model.predict(x_test)
+    print('FM测试集的分类准确率为: {:.2%}'.format(accuracy_score(y_test, val_predicts)))
+    print("FM测试集均方误差mse：{:.2%}".format(mean_squared_error(y_test, val_predicts)))
+    print("FM测试集召回率recall：{:.2%}".format(recall_score(y_test, val_predicts)))
+    print("FM测试集的精度precision：{:.2%}".format(precision_score(y_test, val_predicts)))
+
