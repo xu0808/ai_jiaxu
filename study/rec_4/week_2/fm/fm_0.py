@@ -2,7 +2,8 @@
 # coding: utf-8
 # Python手动实现FM
 # diabetes皮马人糖尿病数据集FM二分类
-# FM算法解析及Python代码实现
+#
+# FM算法解析及Python实现
 # https://www.jianshu.com/p/bb2bce9135e4
 # FM(因子分解机)模型算法：稀疏数据下的特征二阶组合问题（个性化特征）
 # 1、应用矩阵分解思想，引入隐向量构造FM模型方程
