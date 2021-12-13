@@ -19,8 +19,15 @@ weight_dim = 17  # 16 + 1
 learning_rate = 0.05
 feature_dim = 4
 
+keys = ['user_id', 'article_id', 'environment', 'region', 'label']
+types = [tf.int64, tf.int64, tf.int64, tf.int64, tf.float32]
+# 分批读出每个特征
+data_set = tf_record.read('click_log', keys, types, batch_size=batch_size)
+
 
 def fm_fn(inputs):
+    """FM的模型方程：LR线性组合 + 交叉项组合 = 1阶特征组合 + 2阶特征组合"""
+
     weight = tf.reshape(inputs, shape=[-1, feature_dim, weight_dim])
 
     # batch * 4 * 16, batch * 4 * 1
@@ -42,24 +49,19 @@ def train():
     # 1、模型训练
     for epoch in range(epochs):
         print('Start of epoch %d' % (epoch,))
-        keys = ['user_id', 'article_id', 'environment', 'region', 'label']
-        types = [tf.int64, tf.int64, tf.int64, tf.int64, tf.float32]
-        # 分批读出每个特征
-        data_set = tf_record.read('click_log', keys, types, batch_size=batch_size)
         batch_num = 0
-        for user_id, article_id, environment, region, label in data_set:
+        # user_id, article_id, environment, region
+        for f_1, f_2, f_3, f_4, label in data_set:
             # 初始化和读取向量
-            user_id_emb = tf.constant(ps.pull(user_id.numpy()))
-            article_id_emb = tf.constant(ps.pull(article_id.numpy()))
-            environment_emb = tf.constant(ps.pull(environment.numpy()))
-            region_emb = tf.constant(ps.pull(region.numpy()))
+            features = [f_1, f_2, f_3, f_4]
+            embs = [tf.constant(ps.pull(f.numpy())) for f in features]
             y_true = tf.constant(label, dtype=tf.float32)
             with tf.GradientTape() as tape:
-                features = [user_id_emb, article_id_emb, environment_emb, region_emb]
+
                 # 【所有参数计算必须位于tape.watch后】
-                tape.watch(features)
+                tape.watch(embs)
                 # 所有特征向量拼接
-                inputs = tf.concat(features, 1)
+                inputs = tf.concat(embs, 1)
                 y_pred = fm_fn(inputs)
                 loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=y_pred, labels=y_true))
             # 损失计算
@@ -72,20 +74,15 @@ def train():
             # if batch_num > 2:
             #     break
             # 梯度下降
-            grads = tape.gradient(loss, features)
-            user_id_emb -= grads[0] * learning_rate
-            article_id_emb -= grads[1] * learning_rate
-            environment_emb -= grads[2] * learning_rate
-            region_emb -= grads[3] * learning_rate
-            # 更新向量
-            ps.push(user_id.numpy(), user_id_emb.numpy())
-            ps.push(article_id.numpy(), article_id_emb.numpy())
-            ps.push(environment.numpy(), environment_emb.numpy())
-            ps.push(region.numpy(), region_emb.numpy())
+            grads = tape.gradient(loss, embs)
+            for i in range(4):
+                # 更新向量
+                embs[i] -= grads[i] * learning_rate
+                ps.push(features[i].numpy(), embs[i].numpy())
             batch_num += 1
 
     print('result -> epoch = %d, batch_num = %d, loss = %f' % (epoch, batch_num, loss.numpy()))
-    print('user_id_emb top 5', user_id_emb[0:5])
+    print('user_id_emb top 5', features[0][0:5])
     # 2、向量存取
     keys, values = [], []
     for key in ps.cache:

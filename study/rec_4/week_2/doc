@@ -13,3 +13,12 @@ project_code\testapp\model
 【笔记】
 FM因子分解机的原理、公式推导、实现和应用
 https://zhuanlan.zhihu.com/p/145436595
+
+FM：推荐算法中的瑞士军刀
+https://zhuanlan.zhihu.com/p/343174108
+摘要：
+y = w_0 + ∑w_i * x_i  + ∑ ∑<w_i,w_j> * x_i*x_j
+都是ID类特征，所以FM公式简化为 = >
+y = w_0 + ∑w_i * x_i  + ∑ ∑<w_i,w_j>
+两两特征交叉，将时间复杂度由[公式]降低为O(n)，而且n还是样本中的非零特征数
+y = w_0 + (∑w_i) * * 2  + ∑w_i * * 2

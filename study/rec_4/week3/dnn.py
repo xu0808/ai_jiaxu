@@ -1,27 +1,29 @@
-# -*- coding: utf-8 -*-
-# @Author : Zip
-# @Time   : 2020/11/10|9:59
-# @Moto   : Knowledge comes from decomposition
+#!/usr/bin/env python
+# coding: utf-8
+# DNN基础
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import tf_record
+import cache_server
+
+batch_size = 200
+epochs = 200
+
+feature_num = 4
+emb_dim = 4
+learning_rate = 0.2
+active = tf.nn.relu
+
+keys = ['user_id', 'article_id', 'environment', 'region', 'label']
+types = [tf.int64, tf.int64, tf.int64, tf.int64, tf.float32]
+# 分批读出每个特征
+data_set = tf_record.read('click_log', keys, types, batch_size=batch_size)
 
 config = {
-    "feature_len": 14,
-    "embedding_dim": 5,
-    "label_len": 1,
-    "n_parse_threads": 4,
-    "shuffle_buffer_size": 1024,
-    "prefetch_buffer_size": 1,
-    "batch": 16,
-    "learning_rate": 0.01,
-
-    "dnn_hidden_units": [32, 16],
-    "activation_function": tf.nn.relu,
-    "dnn_l2": 0.1,
-
     "train_file": "../data2/train",
     "test_file": "../data2/val",
     "saved_embedding": "../data4/saved_dnn_embedding",
@@ -40,93 +42,64 @@ config = {
 }
 
 
-def nn_tower(
-        name, nn_input, hidden_units,
-        activation=tf.nn.relu, use_bias=False,
-        l2=0.0):
-    out = nn_input
-    for i, num in enumerate(hidden_units):
-        out = tf.layers.dense(
-            out,
-            units=num,
-            kernel_initializer=tf.contrib.layers.xavier_initializer(),
-            kernel_regularizer=tf.contrib.layers.l2_regularizer(l2),
-            use_bias=use_bias,
-            activation=activation,
-            name=name + "/layer_" + str(i),
-        )
-    return out
+class DNN_Model(tf.keras.models.Model):
+
+    def __init__(self):
+        super(DNN_Model, self).__init__()
+        self.d1 = tf.keras.layers.Dense(32, use_bias=False, activation=active)
+        self.d2 = tf.keras.layers.Dense(16, use_bias=False, activation=active )
+        self.d3 = tf.keras.layers.Dense(1, use_bias=False, activation=None)
+
+    def call(self, x):
+        x_1 = self.d1(x)
+        x_2 = self.d2(x_1)
+        x_3 = self.d3(x_2)
+        out = tf.sigmoid(x_3)
+        return out
 
 
-def dnn_fn(inputs, is_test):
-    # 取特征和y值，feature为：[batch, f_nums, weight_dim]
-    input_embedding = tf.reshape(
-        inputs["feature_embedding"],
-        shape=[-1, config['feature_len'], config['embedding_dim']])
+def train():
+    ps = cache_server.CacheServer(vector_dim=emb_dim)
+    model = DNN_Model()
+    # 1、模型训练
+    for epoch in range(epochs):
+        print('Start of epoch %d' % epoch)
+        batch_num = 0
+        # user_id, article_id, environment, region
+        for f_1, f_2, f_3, f_4, label in data_set:
+            # 初始化和读取向量
+            features = [f_1, f_2, f_3, f_4]
+            embs = [tf.constant(ps.pull(f.numpy())) for f in features]
+            y_true = tf.reshape(label, [200, 1])
+            with tf.GradientTape() as tape:
 
-    # ================================================================
-    #
-    feature_with_embedding_concat = tf.reshape(
-        input_embedding,
-        [-1, config['feature_len'] * config['embedding_dim']])
+                # 【所有参数计算必须位于tape.watch后】
+                tape.watch(embs)
+                # 所有特征向量拼接
+                inputs = tf.concat(embs, 1)
+                logits = model(inputs)
+                loss = tf.reduce_mean(
+                  tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=y_true))
+            # 损失计算
+            if batch_num % 100 == 0:
+                print('epoch = %d, batch_num = %d, loss = %f' % (epoch, batch_num, loss.numpy()))
+            # 最小损失推出
+            if loss < 0.000001:
+                break
+                # 最小损失推出
+            # if batch_num > 2:
+            #     break
+            # 梯度下降
+            grads = tape.gradient(loss, embs)
+            for i in range(4):
+                # 更新向量
+                embs[i] -= grads[i] * learning_rate
+                ps.push(features[i].numpy(), embs[i].numpy())
+            batch_num += 1
 
-    out = nn_tower(
-        'dnn_hidden',
-        feature_with_embedding_concat, config['dnn_hidden_units'],
-        use_bias=True, activation=config['activation_function'],
-        l2=config['dnn_l2']
-    )
-    out_ = nn_tower('out', out, [1], activation=None)
-
-    out_tmp = tf.sigmoid(out_)  # batch
-    if is_test:
-        tf.add_to_collections("input_tensor", feature_with_embedding_concat)
-        tf.add_to_collections("output_tensor", out_tmp)
-
-    # 损失函数loss label = inputs["label"]  # [batch, 1]
-    loss_ = tf.reduce_mean(
-        tf.nn.sigmoid_cross_entropy_with_logits(
-            logits=out_, labels=inputs["label"]))
-
-    out_dic = {
-        "loss": loss_,
-        "ground_truth": inputs["label"][:, 0],
-        "prediction": out_[:, 0]
-    }
-
-    return out_dic
+    print('result -> epoch = %d, batch_num = %d, loss = %f' % (epoch, batch_num, loss.numpy()))
+    print('user_id_emb top 5', features[0][0:5])
 
 
-# define graph
-def setup_graph(inputs, is_test=False):
-    result = {}
-    with tf.variable_scope("net_graph", reuse=is_test):
-        # init graph
-        net_out_dic = dnn_fn(inputs, is_test)
-
-        loss = net_out_dic["loss"]
-
-        result["out"] = net_out_dic
-        if is_test:
-            return result
-
-        # ps - sgd
-        emb_grad = tf.gradients(
-            loss, [inputs["feature_embedding"]], name="feature_embedding")[0]
-
-        result["feature_new_embedding"] = \
-            inputs["feature_embedding"] - config['learning_rate'] * emb_grad
-
-        result["feature_embedding"] = inputs["feature_embedding"]
-        result["feature"] = inputs["feature"]
-
-        # net - sgd
-        tvars1 = tf.trainable_variables()
-        grads1 = tf.gradients(loss, tvars1)
-        opt = tf.train.GradientDescentOptimizer(
-            learning_rate=config['learning_rate'],
-            use_locking=True)
-        train_op = opt.apply_gradients(zip(grads1, tvars1))
-        result["train_op"] = train_op
-
-        return result
+if __name__ == "__main__":
+    train()
