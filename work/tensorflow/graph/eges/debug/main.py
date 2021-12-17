@@ -2,7 +2,6 @@ import numpy as np
 import tensorflow as tf
 import time
 from model import EGES
-from utils import *
 
 # 数据文件配置
 data_dir = '../data'

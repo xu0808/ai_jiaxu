@@ -2,7 +2,6 @@
 # coding: utf-8
 # 数据处理
 
-from data_process import *
 from model import *
 
 # training params

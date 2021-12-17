@@ -18,6 +18,7 @@ from data_process.criteo import create_criteo_dataset
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+data_dir = 'D:\\study\\src\\data'
 
 
 if __name__ == '__main__':
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '4'
     # ========================= Hyper Parameters =======================
     # you can modify your file path
-    file = '../dataset/Criteo/train.txt'
+    file = os.path.join(data_dir, 'criteo_sample.txt')
     read_part = True
     sample_num = 5000000
     test_size = 0.2
@@ -40,9 +41,7 @@ if __name__ == '__main__':
     epochs = 10
     # ========================== Create dataset =======================
     feature_columns, train, test = create_criteo_dataset(file=file,
-                                           read_part=read_part,
-                                           sample_num=sample_num,
-                                           test_size=test_size)
+      read_part=read_part, sample_num=sample_num, test_size=test_size)
     train_X, train_y = train
     test_X, test_y = test
     # ============================Build Model==========================

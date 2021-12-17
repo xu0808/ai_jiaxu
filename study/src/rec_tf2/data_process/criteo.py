@@ -12,15 +12,14 @@ The values of these features have been hashed onto 32 bits for anonymization pur
 """
 
 import pandas as pd
-import numpy as np
 
 from sklearn.preprocessing import LabelEncoder, KBinsDiscretizer
 from sklearn.model_selection import train_test_split
 
-from .utils import sparseFeature
+from utils import sparseFeature
 
 
-def create_criteo_dataset(file, embed_dim=8, read_part=True, sample_num=100000, test_size=0.2):
+def create_criteo_dataset(file, embed_dim=8, read_part=True, sample_num=200, test_size=0.2):
     """
     a example about creating criteo dataset
     :param file: dataset's path
@@ -30,30 +29,30 @@ def create_criteo_dataset(file, embed_dim=8, read_part=True, sample_num=100000, 
     :param test_size: ratio of test dataset
     :return: feature columns, train, test
     """
-    names = ['label', 'I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9', 'I10', 'I11',
-             'I12', 'I13', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11',
-             'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C20', 'C21', 'C22',
-             'C23', 'C24', 'C25', 'C26']
 
     if read_part:
-        data_df = pd.read_csv(file, sep='\t', iterator=True, header=None,
-                          names=names)
-        data_df = data_df.get_chunk(sample_num)
+        # 部分读取【iterator=True】
+        data_df_0 = pd.read_csv(file, iterator=True)
+        data_df = data_df_0.get_chunk(sample_num)
 
     else:
-        data_df = pd.read_csv(file, sep='\t', header=None, names=names)
-
+        data_df = pd.read_csv(file)
+    # 字符特征
     sparse_features = ['C' + str(i) for i in range(1, 27)]
+    # 默认取'-1'
+    data_df[sparse_features] = data_df[sparse_features].fillna('-1')
+    # 数值特征
     dense_features = ['I' + str(i) for i in range(1, 14)]
+    # 默认取0
+    data_df[dense_features] = data_df[dense_features].fillna(0)
+    # 全部特征
     features = sparse_features + dense_features
 
-    data_df[sparse_features] = data_df[sparse_features].fillna('-1')
-    data_df[dense_features] = data_df[dense_features].fillna(0)
-
-    # Bin continuous data into intervals.
+    # K-bins离散化（分箱）
     est = KBinsDiscretizer(n_bins=100, encode='ordinal', strategy='uniform')
     data_df[dense_features] = est.fit_transform(data_df[dense_features])
 
+    # 标签顺序字典
     for feat in sparse_features:
         le = LabelEncoder()
         data_df[feat] = le.fit_transform(data_df[feat])

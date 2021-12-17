@@ -3,8 +3,6 @@ import tensorflow.compat.v1 as tf
 import time
 import argparse
 from EGES_model import EGES_Model
-from utils import *
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='manual to this script')
