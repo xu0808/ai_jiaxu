@@ -93,7 +93,7 @@ def train():
     model = FM(8)
 
     # 3、训练模型
-    model.fit(x_train, y_train, epochs=1000, batch_size=20, validation_data=(x_test, y_test))
+    model.fit(x_train, y_train, epochs=100, batch_size=20, validation_data=(x_test, y_test))
     return model
 
 
