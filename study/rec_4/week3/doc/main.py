@@ -6,13 +6,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from ps import PS
+from inputs import InputFn
 from auc import AUCUtil
 # from dnn import *
 # from deepfm import *
-# from doubletower import *
+from doubletower import *
 from mmoe import *
+from saved_model import *
 
 # 初始化对应
+local_ps = PS(config['embedding_dim'])  # 参数服务
 train_metric = AUCUtil()  # 评估
 test_metric = AUCUtil()  # 评估
 inputs = InputFn(local_ps, config)  # 输入
@@ -90,14 +94,14 @@ def valid_step(sess, test_itor, test_dic, saver, _step):
             break
 
 
-# def saved_pb():
-#     input_tensor = config["input_tensor"]
-#     output_tensor = config["output_tensor"]
-#     model_path_dir = config['saved_checkpoint']
-#     export_path_model = config['saved_pb']
-#     save_pb(model_path_dir, export_path_model, input_tensor, output_tensor)
+def saved_pb():
+    input_tensor = config["input_tensor"]
+    output_tensor = config["output_tensor"]
+    model_path_dir = config['saved_checkpoint']
+    export_path_model = config['saved_pb']
+    save_pb(model_path_dir, export_path_model, input_tensor, output_tensor)
 
 
 if __name__ == '__main__':
     train()
-    # saved_pb()
+    saved_pb()
