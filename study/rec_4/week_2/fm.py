@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 # FM特征交叉
+# 自定义参数实现方式
 # 可以对比TensorFlow2.0 实现FM
 # https://blog.csdn.net/qq_34333481/article/details/103919923
 
@@ -58,7 +59,7 @@ def train():
             y_true = tf.constant(label, dtype=tf.float32)
             with tf.GradientTape() as tape:
 
-                # 【所有参数计算必须位于tape.watch后】
+                # 【普通变量，非普通参数，所有参数计算必须位于tape.watch后】
                 tape.watch(embs)
                 # 所有特征向量拼接
                 inputs = tf.concat(embs, 1)
