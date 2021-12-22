@@ -1,12 +1,10 @@
-'''
-# Time   : 2020/12/1 21:41
-# Author : junchaoli
-# File   : layer.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Layer
 from tensorflow.keras.regularizers import l2
+
 
 class FFM_Layer(Layer):
     def __init__(self, feature_columns, k, w_reg=1e-4, v_reg=1e-4):
@@ -42,7 +40,7 @@ class FFM_Layer(Layer):
         for i in range(sparse_inputs.shape[1]):
             x = tf.concat(
                 [x, tf.one_hot(tf.cast(sparse_inputs[:, i], dtype=tf.int32),
-                                   depth=self.sparse_feature_columns[i]['feat_onehot_dim'])], axis=1)
+                               depth=self.sparse_feature_columns[i]['feat_onehot_dim'])], axis=1)
 
         linear_part = self.w0 + tf.matmul(x, self.w)
         inter_part = 0
@@ -50,11 +48,10 @@ class FFM_Layer(Layer):
         field_f = tf.tensordot(x, self.v, axes=1)  # [None, 2291] x [2291, 39, 8] = [None, 39, 8]
         # 域之间两两相乘，
         for i in range(self.field_num):
-            for j in range(i+1, self.field_num):
+            for j in range(i + 1, self.field_num):
                 inter_part += tf.reduce_sum(
-                    tf.multiply(field_f[:, i], field_f[:, j]), # [None, 8]
+                    tf.multiply(field_f[:, i], field_f[:, j]),  # [None, 8]
                     axis=1, keepdims=True
                 )
 
         return linear_part + inter_part
-

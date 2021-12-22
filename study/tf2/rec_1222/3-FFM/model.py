@@ -1,13 +1,11 @@
-'''
-# Time   : 2020/12/1 21:41
-# Author : junchaoli
-# File   : model.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 from layer import FFM_Layer
 
 import tensorflow as tf
 from tensorflow.keras import Model
+
 
 class FFM(Model):
     def __init__(self, feature_columns, k, w_reg=1e-4, v_reg=1e-4):
