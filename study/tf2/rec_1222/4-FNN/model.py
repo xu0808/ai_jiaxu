@@ -1,11 +1,9 @@
-'''
-# Time   : 2020/12/11 16:11
-# Author : junchaoli
-# File   : model.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 from layer import FM_layer, DNN_layer
 from tensorflow.keras.models import Model
+
 
 class FM(Model):
     def __init__(self, k, w_reg=1e-4, v_reg=1e-4):
@@ -15,6 +13,7 @@ class FM(Model):
     def call(self, inputs, training=None, mask=None):
         output = self.fm(inputs)
         return output
+
 
 class DNN(Model):
     def __init__(self, hidden_units, output_dim, activation='relu'):
