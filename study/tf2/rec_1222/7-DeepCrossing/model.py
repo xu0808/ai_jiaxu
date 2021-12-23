@@ -1,13 +1,11 @@
-'''
-# Time   : 2020/12/17 21:51
-# Author : junchaoli
-# File   : model.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 from layer import Embed_layer, Res_layer
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense
+
 
 class DeepCrossing(Model):
     def __init__(self, feature_columns, k, hidden_units, res_layer_num):
@@ -28,5 +26,3 @@ class DeepCrossing(Model):
             x = layer(x)
         output = self.output_layer(x)
         return output
-
-

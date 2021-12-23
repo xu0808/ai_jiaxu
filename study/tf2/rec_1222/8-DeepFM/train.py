@@ -1,17 +1,20 @@
-'''
-# Time   : 2020/10/22 11:21
-# Author : junchaoli
-# File   : train_lstm.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
+
+
 from model import DeepFM
 from utils import create_criteo_dataset
 
+import os
 import tensorflow as tf
 from tensorflow.keras import optimizers, losses
 from sklearn.metrics import accuracy_score
 
+data_dir = 'D:\\study\\ide\\ai_jiaxu\\study\\tf2\\rec_1222\\Data'
+file_path = os.path.join(data_dir, 'train.txt')
+model_dir = 'D:\\study\\data\\tf2_rec_1222'
+
 if __name__ == '__main__':
-    file_path = 'E:\\PycharmProjects\\推荐算法\\data\\train.txt'
     feature_columns, (X_train, y_train), (X_test, y_test) = create_criteo_dataset(file_path, test_size=0.2)
 
     k = 10
@@ -35,18 +38,18 @@ if __name__ == '__main__':
     # model.summary()
 
     # 训练方式二(不需要tensorboard可视化的可将summary去掉)
-    summary_writer = tf.summary.create_file_writer('E:\\PycharmProjects\\tensorboard')
+    summary_writer = tf.summary.create_file_writer(model_dir)
     for i in range(500):
         with tf.GradientTape() as tape:
             y_pre = model(X_train)
             loss = tf.reduce_mean(losses.binary_crossentropy(y_true=y_train, y_pred=y_pre))
             print(loss.numpy())
-        with summary_writer.as_default(): # 可视化
+        with summary_writer.as_default():  # 可视化
             tf.summary.scalar("loss", loss, step=i)
         grad = tape.gradient(loss, model.variables)
         optimizer.apply_gradients(grads_and_vars=zip(grad, model.variables))
 
-    #评估
+    # 评估
     pre = model(X_test)
-    pre = [1 if x>0.5 else 0 for x in pre]
+    pre = [1 if x > 0.5 else 0 for x in pre]
     print("AUC: ", accuracy_score(y_test, pre))

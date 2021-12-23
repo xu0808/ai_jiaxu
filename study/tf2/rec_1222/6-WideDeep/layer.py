@@ -1,12 +1,10 @@
-'''
-# Time   : 2020/10/22 14:44
-# Author : junchaoli
-# File   : layer.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import Dense
+
 
 class Wide_layer(Layer):
     def __init__(self):
@@ -21,9 +19,10 @@ class Wide_layer(Layer):
                                  trainable=True,
                                  regularizer=tf.keras.regularizers.l2(1e-4))
 
-    def call(self, inputs, **kwargs):   #输入为 dense_inputs
-        x = tf.matmul(inputs, self.w) + self.w0     #shape: (batchsize, 1)
+    def call(self, inputs, **kwargs):  # 输入为 dense_inputs
+        x = tf.matmul(inputs, self.w) + self.w0  # shape: (batchsize, 1)
         return x
+
 
 class Deep_layer(Layer):
     def __init__(self, hidden_units, output_dim, activation):
@@ -37,6 +36,3 @@ class Deep_layer(Layer):
             x = layer(x)
         output = self.output_layer(x)
         return output
-
-
-

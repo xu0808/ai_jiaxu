@@ -1,12 +1,10 @@
-'''
-# Time   : 2020/12/17 21:33
-# Author : junchaoli
-# File   : layer.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 import tensorflow as tf
 from tensorflow.keras.layers import Layer, Embedding, Dense, Attention
 import tensorflow.keras.backend as K
+
 
 class Embed_layer(Layer):
     def __init__(self, k, sparse_feature_columns):
@@ -18,11 +16,12 @@ class Embed_layer(Layer):
             raise ValueError("The dim of inputs should be 2, not %d" % (K.ndim(inputs)))
 
         emb = tf.transpose(
-                    tf.convert_to_tensor([layer(inputs[:, i])
-                                for i, layer in enumerate(self.emb_layers)]),
-                    [1, 0, 2])
-        emb = tf.reshape(emb, shape=(-1, emb.shape[1]*emb.shape[2]))
+            tf.convert_to_tensor([layer(inputs[:, i])
+                                  for i, layer in enumerate(self.emb_layers)]),
+            [1, 0, 2])
+        emb = tf.reshape(emb, shape=(-1, emb.shape[1] * emb.shape[2]))
         return emb
+
 
 class Res_layer(Layer):
     def __init__(self, hidden_units):
@@ -43,4 +42,3 @@ class Res_layer(Layer):
 
         output = inputs + x
         return tf.nn.relu(output)
-

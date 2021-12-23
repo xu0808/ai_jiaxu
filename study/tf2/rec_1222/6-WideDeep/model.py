@@ -1,8 +1,5 @@
-'''
-# Time   : 2020/10/22 15:07
-# Author : junchaoli
-# File   : model.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 from layer import Wide_layer, Deep_layer
 
@@ -10,12 +7,13 @@ import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Embedding
 
+
 class WideDeep(Model):
     def __init__(self, feature_columns, hidden_units, output_dim, activation):
         super().__init__()
         self.dense_feature_columns, self.sparse_feature_columns = feature_columns
-        self.embedding_layer = {'embed_layer'+str(i): Embedding(feat['feat_onehot_dim'], feat['embed_dim'])
-                                for i,feat in enumerate(self.sparse_feature_columns)}
+        self.embedding_layer = {'embed_layer' + str(i): Embedding(feat['feat_onehot_dim'], feat['embed_dim'])
+                                for i, feat in enumerate(self.sparse_feature_columns)}
 
         self.wide = Wide_layer()
         self.deep = Deep_layer(hidden_units, output_dim, activation)
@@ -31,9 +29,9 @@ class WideDeep(Model):
         wide_output = self.wide(wide_input)
 
         # deep部分
-        sparse_embed = tf.concat([self.embedding_layer['embed_layer'+str(i)](sparse_inputs[:, i]) \
-                        for i in range(sparse_inputs.shape[-1])], axis=-1)
+        sparse_embed = tf.concat([self.embedding_layer['embed_layer' + str(i)](sparse_inputs[:, i]) \
+                                  for i in range(sparse_inputs.shape[-1])], axis=-1)
         deep_output = self.deep(sparse_embed)
 
-        output = tf.nn.sigmoid(0.5*(wide_output + deep_output))
+        output = tf.nn.sigmoid(0.5 * (wide_output + deep_output))
         return output
