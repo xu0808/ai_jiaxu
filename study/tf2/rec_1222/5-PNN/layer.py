@@ -1,12 +1,10 @@
-'''
-# Time   : 2020/12/15 17:53
-# Author : junchaoli
-# File   : layer.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 import tensorflow as tf
 from tensorflow.keras.layers import Layer, Dense, Dropout, Flatten, Conv2D, MaxPool2D
 import tensorflow.keras.backend as K
+
 
 class DNN_layer(Layer):
     def __init__(self, hidden_units, output_dim, activation='relu', dropout=0.2):
@@ -27,11 +25,12 @@ class DNN_layer(Layer):
         output = self.output_layer(x)
         return tf.nn.sigmoid(output)
 
+
 class InnerProductLayer(Layer):
     def __init__(self):
         super().__init__()
 
-    def call(self, inputs, **kwargs):  #[None, field, k]
+    def call(self, inputs, **kwargs):  # [None, field, k]
         if K.ndim(inputs) != 3:
             raise ValueError(
                 "Unexpected inputs dimensions %d, expect to be 3 dimensions" % (K.ndim(inputs)))
@@ -53,11 +52,12 @@ class InnerProductLayer(Layer):
             for j in range(i + 1, field_num):
                 row.append(i)
                 col.append(j)
-        p = tf.transpose(tf.gather(tf.transpose(inputs, [1, 0, 2]), row), [1, 0, 2]) # [None, pair_num, k]
-        q = tf.transpose(tf.gather(tf.transpose(inputs, [1, 0, 2]), col), [1, 0, 2]) # [None, pair_num, k]
-        InnerProduct = tf.reduce_sum(p*q, axis=-1)  # [None, pair_num]
+        p = tf.transpose(tf.gather(tf.transpose(inputs, [1, 0, 2]), row), [1, 0, 2])  # [None, pair_num, k]
+        q = tf.transpose(tf.gather(tf.transpose(inputs, [1, 0, 2]), col), [1, 0, 2])  # [None, pair_num, k]
+        InnerProduct = tf.reduce_sum(p * q, axis=-1)  # [None, pair_num]
 
         return InnerProduct
+
 
 class OuterProductLayer(Layer):
     def __init__(self):
@@ -66,7 +66,7 @@ class OuterProductLayer(Layer):
     def build(self, input_shape):
         self.field_num = input_shape[1]
         self.k = input_shape[2]
-        self.pair_num = self.field_num*(self.field_num-1)//2
+        self.pair_num = self.field_num * (self.field_num - 1) // 2
 
         # 该形状方便计算,每个外积矩阵对应一个，共pair个w矩阵
         self.w = self.add_weight(name='W', shape=(self.k, self.pair_num, self.k),
@@ -74,7 +74,7 @@ class OuterProductLayer(Layer):
                                  regularizer=tf.keras.regularizers.l2(1e-4),
                                  trainable=True)
 
-    def call(self, inputs, **kwargs):  #[None, field, k]
+    def call(self, inputs, **kwargs):  # [None, field, k]
         if K.ndim(inputs) != 3:
             raise ValueError(
                 "Unexpected inputs dimensions %d, expect to be 3 dimensions" % (K.ndim(inputs)))
@@ -88,11 +88,12 @@ class OuterProductLayer(Layer):
         q = tf.transpose(tf.gather(tf.transpose(inputs, [1, 0, 2]), col), [1, 0, 2])  # [None, pair_num, k]
         p = tf.expand_dims(p, axis=1)  # [None, 1, pair_num, k] 忽略掉第一维，需要两维与w一致才能进行点乘
 
-        tmp = tf.multiply(p, self.w)   # [None, 1, pair_num, k] * [k, pair_num, k] = [None, k, pair_num, k]
-        tmp = tf.reduce_sum(tmp, axis=-1)   # [None, k, pair_num]
+        tmp = tf.multiply(p, self.w)  # [None, 1, pair_num, k] * [k, pair_num, k] = [None, k, pair_num, k]
+        tmp = tf.reduce_sum(tmp, axis=-1)  # [None, k, pair_num]
         tmp = tf.multiply(tf.transpose(tmp, [0, 2, 1]), q)  # [None, pair_num, k]
-        OuterProduct = tf.reduce_sum(tmp, axis=-1)   # [None, pair_num]
+        OuterProduct = tf.reduce_sum(tmp, axis=-1)  # [None, pair_num]
         return OuterProduct
+
 
 class FGCNN_layer(Layer):
     def __init__(self, filters=[14, 16], kernel_width=[7, 7], dnn_maps=[3, 3], pooling_width=[2, 2]):
@@ -126,15 +127,13 @@ class FGCNN_layer(Layer):
         # inputs: [None, n, k]
         k = inputs.shape[-1]
         dnn_output = []
-        x = tf.expand_dims(inputs, axis=-1) # [None, n, k, 1]最后一维为通道
+        x = tf.expand_dims(inputs, axis=-1)  # [None, n, k, 1]最后一维为通道
         for i in range(len(self.filters)):
-            x = self.conv_layers[i](x)      # [None, n, k, filters[i]]
-            x = self.pool_layers[i](x)      # [None, n/poolwidth[i], k, filters[i]]
+            x = self.conv_layers[i](x)  # [None, n, k, filters[i]]
+            x = self.pool_layers[i](x)  # [None, n/poolwidth[i], k, filters[i]]
             out = self.flatten_layer(x)
-            out = Dense(self.dnn_maps[i]*x.shape[1]*x.shape[2], activation='relu')(out)
-            out = tf.reshape(out, shape=(-1, out.shape[1]//k, k))
+            out = Dense(self.dnn_maps[i] * x.shape[1] * x.shape[2], activation='relu')(out)
+            out = tf.reshape(out, shape=(-1, out.shape[1] // k, k))
             dnn_output.append(out)
-        output = tf.concat(dnn_output, axis=1) # [None, new_N, k]
+        output = tf.concat(dnn_output, axis=1)  # [None, new_N, k]
         return output
-
-
