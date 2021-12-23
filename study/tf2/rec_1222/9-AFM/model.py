@@ -1,11 +1,10 @@
-'''
-# Time   : 2020/12/9 17:25
-# Author : junchaoli
-# File   : model.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
+
 
 from layer import AFM_layer
 from tensorflow.keras.models import Model
+
 
 class AFM(Model):
     def __init__(self, feature_columns, mode):

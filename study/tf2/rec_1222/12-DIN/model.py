@@ -1,8 +1,5 @@
-'''
-# Time   : 2020/12/29 14:44
-# Author : junchaoli
-# File   : model.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 from layer import Attention, Dice
 
@@ -10,6 +7,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Embedding, Dense, BatchNormalization, Input, PReLU, Dropout
 from tensorflow.keras.regularizers import l2
+
 
 class DIN(Model):
     def __init__(self, feature_columns, behavior_feature_list, att_hidden_units, ffn_hidden_units,
@@ -25,16 +23,16 @@ class DIN(Model):
         # other sparse embedding
         self.embed_sparse_layers = [Embedding(feat['feat_onehot_dim'], feat['embed_dim'])
                                     for feat in self.sparse_feature_columns
-                                      if feat['feat'] not in behavior_feature_list]
+                                    if feat['feat'] not in behavior_feature_list]
         # behavior embedding layers, item id and category id
         self.embed_seq_layers = [Embedding(feat['feat_onehot_dim'], feat['embed_dim'])
-                                    for feat in self.sparse_feature_columns
-                                      if feat['feat'] in behavior_feature_list]
+                                 for feat in self.sparse_feature_columns
+                                 if feat['feat'] in behavior_feature_list]
 
         self.att_layer = Attention_Layer(att_hidden_units, att_activation)
         self.bn_layer = BatchNormalization(trainable=True)
-        self.dense_layer = [Dense(unit, activation=PReLU() if ffn_activation=='prelu' else Dice())\
-             for unit in ffn_hidden_units]
+        self.dense_layer = [Dense(unit, activation=PReLU() if ffn_activation == 'prelu' else Dice()) \
+                            for unit in ffn_hidden_units]
         self.dropout = Dropout(dnn_dropout)
         self.out_layer = Dense(1, activation=None)
 
@@ -47,23 +45,23 @@ class DIN(Model):
 
         # dense & sparse inputs embedding
         other_feat = tf.concat([layer(sparse_inputs[:, i]) for i, layer in enumerate(self.embed_sparse_layers)],
-                            axis=-1)
+                               axis=-1)
         other_feat = tf.concat([other_feat, dense_inputs], axis=-1)
 
         # history_seq & candidate_item embedding
         seq_embed = tf.concat([layer(history_seq[:, :, i])
-                            for i, layer in enumerate(self.embed_seq_layers)],
-                            axis=-1)   # (None, n, k)
+                               for i, layer in enumerate(self.embed_seq_layers)],
+                              axis=-1)  # (None, n, k)
         item_embed = tf.concat([layer(candidate_item[:, i])
-                            for i, layer in enumerate(self.embed_seq_layers)],
-                            axis=-1)   # (None, k)
+                                for i, layer in enumerate(self.embed_seq_layers)],
+                               axis=-1)  # (None, k)
 
         # one_hot之后第一维是1的token，为填充的0
-        mask = tf.cast(tf.not_equal(history_seq[:, :, 0], 0), dtype=tf.float32)   # (None, n)
+        mask = tf.cast(tf.not_equal(history_seq[:, :, 0], 0), dtype=tf.float32)  # (None, n)
         att_emb = self.attention_layer([item_embed, seq_embed, seq_embed, mask])  # (None, k)
 
         # 若其他特征不为empty
-        if self.dense_len>0 or self.other_sparse_len>0:
+        if self.dense_len > 0 or self.other_sparse_len > 0:
             emb = tf.concat([att_emb, item_embed, other_feat], axis=-1)
         else:
             emb = tf.concat([att_emb, item_embed], axis=-1)
@@ -74,4 +72,4 @@ class DIN(Model):
 
         emb = self.dropout(emb)
         output = self.out_layer(emb)
-        return tf.nn.sigmoid(output) # (None, 1)
+        return tf.nn.sigmoid(output)  # (None, 1)

@@ -1,8 +1,5 @@
-'''
-# Time   : 2021/1/3 15:10
-# Author : junchaoli
-# File   : model.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 from layer import Linear, Dense_layer, CIN
 

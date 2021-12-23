@@ -1,12 +1,10 @@
-'''
-# Time   : 2020/12/3 21:03
-# Author : junchaoli
-# File   : layer.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import Dense, Dropout
+
 
 class Dense_layer(Layer):
     def __init__(self, hidden_units, output_dim, activation='relu', dropout=0.):

@@ -1,8 +1,5 @@
-'''
-# Time   : 2021/12/9 17:14
-# Authur : junchaoli
-# File   : train.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 from model import MMOE
 import tensorflow as tf
