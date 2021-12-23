@@ -1,12 +1,10 @@
-'''
-# Time   : 2021/1/7 13:07
-# Author : junchaoli
-# File   : layer.py
-'''
+#!/usr/bin/env python
+# coding: utf-8
 
 import tensorflow as tf
 from tensorflow.keras.layers import Layer, Dense, Dropout, Flatten, Conv2D, MaxPool2D
 import tensorflow.keras.backend as K
+
 
 class DNN(Layer):
     def __init__(self, hidden_units, out_dim=1, activation='relu', dropout=0.0):
@@ -16,7 +14,7 @@ class DNN(Layer):
         self.drop_layer = Dropout(dropout)
 
     def call(self, inputs, **kwargs):
-        if K.ndim(inputs)!=2:
+        if K.ndim(inputs) != 2:
             raise ValueError("Input dim is not 2 but {}".format(K.ndim(inputs)))
         x = inputs
         for layer in self.dnn_layer:
@@ -24,6 +22,7 @@ class DNN(Layer):
             x = self.drop_layer(x)
         output = self.out_layer(x)
         return tf.nn.sigmoid(output)
+
 
 class FGCNN_layer(Layer):
     def __init__(self, filters=[14, 16], kernel_width=[7, 7], dnn_maps=[3, 3], pooling_width=[2, 2]):
@@ -57,24 +56,13 @@ class FGCNN_layer(Layer):
         # inputs: [None, n, k]
         k = inputs.shape[-1]
         dnn_output = []
-        x = tf.expand_dims(inputs, axis=-1) # [None, n, k, 1]最后一维为通道
+        x = tf.expand_dims(inputs, axis=-1)  # [None, n, k, 1]最后一维为通道
         for i in range(len(self.filters)):
-            x = self.conv_layers[i](x)      # [None, n, k, filters[i]]
-            x = self.pool_layers[i](x)      # [None, n/poolwidth[i], k, filters[i]]
+            x = self.conv_layers[i](x)  # [None, n, k, filters[i]]
+            x = self.pool_layers[i](x)  # [None, n/poolwidth[i], k, filters[i]]
             out = self.flatten_layer(x)
-            out = Dense(self.dnn_maps[i]*x.shape[1]*x.shape[2], activation='relu')(out)
-            out = tf.reshape(out, shape=(-1, out.shape[1]//k, k))
+            out = Dense(self.dnn_maps[i] * x.shape[1] * x.shape[2], activation='relu')(out)
+            out = tf.reshape(out, shape=(-1, out.shape[1] // k, k))
             dnn_output.append(out)
-        output = tf.concat(dnn_output, axis=1) # [None, new_N, k]
+        output = tf.concat(dnn_output, axis=1)  # [None, new_N, k]
         return output
-
-
-
-
-
-
-
-
-
-
-
