@@ -36,7 +36,7 @@ if __name__ == '__main__':
         with tf.GradientTape() as tape:
             y_pre = model(x_train)
             loss = tf.reduce_mean(losses.binary_crossentropy(y_true=y_train, y_pred=y_pre))
-            print('step[%d]:loss = ' % i, loss.numpy())
+            print('Epoch [%d]:loss = ' % i, loss.numpy())
         with summary_writer.as_default():
             tf.summary.scalar('loss', loss, step=i)
         grad = tape.gradient(loss, model.variables)
