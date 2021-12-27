@@ -19,6 +19,7 @@ def init_fm():
     # 特征数
     feature_num = data_train[0].shape[-1]
     fm_model = FM_Model(k=8, w_reg=1e-4, v_reg=1e-4, f_n=feature_num)
+    print('Total params = ', feature_num * (8+1) + 1)
     return data_train, data_test, fm_model
 
 
