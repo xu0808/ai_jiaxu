@@ -9,6 +9,9 @@
 
 缺点：
 虽然考虑了特征的交叉但是表达能力仍然有限不及深度模型。
+
+思考：
+当前全部为分类特征时，特征可以直接使用参数向量表达
 """
 
 import tensorflow as tf
@@ -20,9 +23,9 @@ import tensorflow.keras.backend as K
 class FM_layer(tf.keras.layers.Layer):
     def __init__(self, k, w_reg, v_reg, f_n):
         super().__init__()
-        self.k = k
-        self.w_reg = w_reg
-        self.v_reg = v_reg
+        self.k = k  # 隐向量vi的维度
+        self.w_reg = w_reg  # 权重w的正则项系数
+        self.v_reg = v_reg  # 权重v的正则项系数
         self.w0 = self.add_weight(shape=(1,), initializer=tf.zeros_initializer(), trainable=True)
         self.w = self.add_weight(shape=(f_n, 1), initializer=init(), trainable=True, regularizer=l2(self.w_reg))
         self.v = self.add_weight(shape=(f_n, self.k), initializer=init(), trainable=True, regularizer=l2(self.v_reg))
@@ -35,8 +38,11 @@ class FM_layer(tf.keras.layers.Layer):
         # 线性部分 shape:(batch_size, 1)
         linear_part = tf.matmul(inputs, self.w) + self.w0  #
         # 交叉部分 shape:(batch_size, self.k)
+        # 交叉部分——第一项
         inter_1 = tf.pow(tf.matmul(inputs, self.v), 2)
+        # 交叉部分——第二项
         inter_2 = tf.matmul(tf.pow(inputs, 2), tf.pow(self.v, 2))
+        # 交叉结果
         inter_part = 0.5 * tf.reduce_sum(inter_1 - inter_2, axis=-1, keepdims=True)
         # 模型输出
         return tf.nn.sigmoid(linear_part + inter_part)

@@ -15,7 +15,7 @@ def init_fm():
     1、FM 模型
     """
     # 训练、测试集
-    data_train, data_test = data_utils.click_data(test_size=0.5)
+    data_train, data_test = data_utils.one_hot_data(test_size=0.5)
     # 特征数
     feature_num = data_train[0].shape[-1]
     fm_model = FM_Model(k=8, w_reg=1e-4, v_reg=1e-4, f_n=feature_num)
