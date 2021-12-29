@@ -4,6 +4,7 @@
 
 import data_utils
 from m1_fm import FM_Model
+from m2_wide_deep import WideDeep
 
 import tensorflow as tf
 from tensorflow.keras import optimizers
@@ -22,10 +23,29 @@ def init_fm():
     return data_train, data_test, fm_model
 
 
+def init_wide_deep():
+    """
+    2、WideDeep 模型
+    """
+    # 训练、测试集
+    features, data_train, data_test = data_utils.emb_data(is_w_d=True)
+    # 特征数
+    feature_num = data_train[0].shape[-1]
+    # 模型参数
+    hidden_units = [256, 128, 64]
+    output_dim = 1
+    activation = 'relu'
+    w2d_model = WideDeep(features, hidden_units, output_dim, activation)
+    print('Total params = ', feature_num * (8 + 1) + 1)
+    return data_train, data_test, w2d_model
+
+
 if __name__ == '__main__':
     # 1、模型
     # 1-1、FM
-    (x_train, y_train), (x_test, y_test), model = init_fm()
+    # (x_train, y_train), (x_test, y_test), model = init_fm()
+    # 1-2、Wide&Deep
+    (x_train, y_train), (x_test, y_test), model = init_wide_deep()
 
     # 2、优化器
     optimizer = optimizers.SGD(0.01)

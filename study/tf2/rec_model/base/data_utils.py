@@ -57,18 +57,18 @@ def emb_data(test_size=0.3, emb_dim=8, is_w_d=False):
     for col in sparse_cols:
         x[col] = LabelEncoder().fit_transform(x[col])
 
-    # 拼接到数据集供wide使用
-    if is_w_d:
-        one_hot_x = pd.get_dummies(x)
-        x = pd.concat([x, one_hot_x], axis=1)
-
-    # 数据集划分
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size)
-
     # 特征
     dense_features = [{'feature': col} for col in dense_cols]
     sparse_features = [{'feature': col, 'one_hot_dim': x[col].nunique(), 'emb_dim': emb_dim} for col in sparse_cols]
     features = [dense_features, sparse_features]
+
+    # 拼接到数据集供wide使用
+    if is_w_d:
+        one_hot_x = pd.get_dummies(x[sparse_cols])
+        x = pd.concat([x, one_hot_x], axis=1)
+
+    # 数据集划分
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size)
     return features, (x_train, y_train), (x_test, y_test)
 
 
