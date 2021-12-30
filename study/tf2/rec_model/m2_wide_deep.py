@@ -49,14 +49,14 @@ class Deep_layer(Layer):
 
 
 class WideDeep(Model):
-    def __init__(self, features, hidden_units, output_dim, activation):
+    def __init__(self, wide_feature_num, features, hidden_units, output_dim, activation):
         super().__init__()
         self.emb_layer = {}
         # 逐个类别特征初始化embedded层
         for i, feat in enumerate(features[1]):
             self.emb_layer['embed_layer' + str(i)] = Embedding(feat['one_hot_dim'], feat['emb_dim'])
 
-        self.wide = Wide_layer(feature_num=39)
+        self.wide = Wide_layer(feature_num=wide_feature_num)
         self.deep = Deep_layer(hidden_units, output_dim, activation)
 
     def call(self, inputs):

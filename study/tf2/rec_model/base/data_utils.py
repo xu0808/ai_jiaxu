@@ -53,6 +53,11 @@ def one_hot_data(test_size=0.3):
 
 def emb_data(test_size=0.3, emb_dim=8, is_w_d=False):
     x, y = normalization()
+
+    # one hot编码(wide侧输入)
+    if is_w_d:
+        one_hot_x = pd.get_dummies(x[sparse_cols])
+
     # LabelEncoding 编码(deep侧输入)
     for col in sparse_cols:
         x[col] = LabelEncoder().fit_transform(x[col])
@@ -64,7 +69,6 @@ def emb_data(test_size=0.3, emb_dim=8, is_w_d=False):
 
     # 拼接到数据集供wide使用
     if is_w_d:
-        one_hot_x = pd.get_dummies(x[sparse_cols])
         x = pd.concat([x, one_hot_x], axis=1)
 
     # 数据集划分
