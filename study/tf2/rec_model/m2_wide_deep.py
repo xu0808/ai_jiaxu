@@ -38,6 +38,7 @@ class Deep_layer(Layer):
     def __init__(self, hidden_units, output_dim, activation):
         super().__init__()
         self.hidden_layer = [Dense(i, activation=activation) for i in hidden_units]
+        # 输出层没有激活函数
         self.output_layer = Dense(output_dim, activation=None)
 
     def call(self, inputs):
@@ -52,27 +53,33 @@ class WideDeep(Model):
     def __init__(self, wide_feature_num, features, hidden_units, output_dim, activation):
         super().__init__()
         self.emb_layer = {}
+        self.dense_features, self.sparse_features = features
         # 逐个类别特征初始化embedded层
-        for i, feat in enumerate(features[1]):
+        for i, feat in enumerate(self.sparse_features):
             self.emb_layer['embed_layer' + str(i)] = Embedding(feat['one_hot_dim'], feat['emb_dim'])
 
         self.wide = Wide_layer(feature_num=wide_feature_num)
         self.deep = Deep_layer(hidden_units, output_dim, activation)
 
     def call(self, inputs):
-        # dense_inputs: 数值特征，13维
-        # sparse_inputs： 类别特征，26维
+        dense_dim = len(self.dense_features)
+        sparse_dim = len(self.sparse_features)
+        # 数值特征
+        dense_inputs = inputs[:, :dense_dim]
+        # 类别特征
+        sparse_inputs = inputs[:, dense_dim:dense_dim + sparse_dim]
         # one_hot处理的类别特征(wide侧的输入)
-        dense_inputs, sparse_inputs, one_hot_inputs = inputs[:, :13], inputs[:, 13:39], inputs[:, 39:]
+        one_hot_inputs = inputs[:, dense_dim + sparse_dim:]
 
         # wide部分
         wide_input = tf.concat([dense_inputs, one_hot_inputs], axis=-1)
         wide_output = self.wide(wide_input)
 
         # deep部分
-        sparse_embed = tf.concat([self.emb_layer['embed_layer' + str(i)](sparse_inputs[:, i]) \
-                                  for i in range(sparse_inputs.shape[-1])], axis=-1)
+        emb_layers = [self.emb_layer['embed_layer' + str(i)](sparse_inputs[:, i]) for i in range(sparse_dim)]
+        sparse_embed = tf.concat(emb_layers, axis=-1)
         deep_output = self.deep(sparse_embed)
 
+        # 模型整体输出
         output = tf.nn.sigmoid(0.5*(wide_output + deep_output))
         return output

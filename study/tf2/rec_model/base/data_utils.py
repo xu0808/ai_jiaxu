@@ -65,7 +65,6 @@ def emb_data(test_size=0.3, emb_dim=8, is_w_d=False):
     # 特征
     dense_features = [{'feature': col} for col in dense_cols]
     sparse_features = [{'feature': col, 'one_hot_dim': x[col].nunique(), 'emb_dim': emb_dim} for col in sparse_cols]
-    features = [dense_features, sparse_features]
 
     # 拼接到数据集供wide使用
     if is_w_d:
@@ -73,7 +72,7 @@ def emb_data(test_size=0.3, emb_dim=8, is_w_d=False):
 
     # 数据集划分
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size)
-    return features, (x_train, y_train), (x_test, y_test)
+    return (dense_features, sparse_features), (x_train, y_train), (x_test, y_test)
 
 
 if __name__ == "__main__":

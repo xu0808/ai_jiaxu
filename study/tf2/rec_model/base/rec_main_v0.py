@@ -35,10 +35,10 @@ def init_wide_deep():
     hidden_units = [256, 128, 64]
     output_dim = 1
     activation = 'relu'
-    sparse_col_num = len(features[1])
-    wide_feature_num = feature_num - sparse_col_num
-    w2d_model = WideDeep(wide_feature_num, features, hidden_units, output_dim, activation)
-    print('Total params = ', feature_num * (8 + 1) + 1)
+    # 类别特征数
+    sparse_num = len(features[1])
+    # wide部分特征数[dense_inputs, one_hot_inputs]
+    w2d_model = WideDeep(feature_num - sparse_num, features, hidden_units, output_dim, activation)
     return data_train, data_test, w2d_model
 
 
