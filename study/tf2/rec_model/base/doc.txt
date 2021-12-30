@@ -21,7 +21,7 @@ FFM（Field-aware Factorization Machine）是 FM 的改进版
 【推荐算法(三)——Wide&Deep】
 需要注意的是，两部分的输入不同：
 Wide 部分：Dense Features + Sparse Features（onehot 处理）+  特征组合
-Deep 部分：Dense Embeddings (Sparse Features 进行 onehot + embedding 处理)
+Deep 部分：Embeddings (Sparse Features embedding 处理)
 
 优点:
 1 结构简单，复杂度低，目前在工业界仍有广泛应用；
@@ -30,3 +30,17 @@ Deep 部分：Dense Embeddings (Sparse Features 进行 onehot + embedding 处理
 缺点：
 1 深度模型可自适应的进行高阶特征交互，但这是隐式的构造特征组合，可解释性差；
 2 深度模型仍需要人工特征来提升模型效果，只是需求量没有线性模型大。
+
+【推荐算法(四)——经典模型 DeepFM】
+Deep与FM结合的产物，也是Wide&Deep的改进版，只是将LR替换成了FM，提升了模型wide侧提取信息的能力。
+与Wide&Deep的异同：
+相同点：都是线性模型与深度模型的结合，低阶与高阶特征交互的融合。
+不同点：DeepFM两个部分共享输入，而Wide&Deep的wide侧是稀疏输入，deep侧是稠密输入；
+       DeepFM无需加入人工特征，可端到端的学习，线上部署更方便，Wide&Deep则需要在输入上加入人工特征提升模型表达能力。
+
+优点：
+1 两部分联合训练，无需加入人工特征，更易部署；
+2 结构简单，复杂度低，两部分共享输入，共享信息，可更精确的训练学习。
+缺点：
+1 将类别特征对应的稠密向量拼接作为输入，然后对元素进行两两交叉。
+这样导致模型无法意识到域的概念，FM与Deep两部分都不会考虑到域，属于同一个域的元素应该对应同样的计算。
