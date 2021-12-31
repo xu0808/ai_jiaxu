@@ -14,36 +14,8 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Layer, Dense, Embedding
 from tensorflow.keras import Model
-from tensorflow.keras.regularizers import l2
-from tensorflow import random_normal_initializer as init
 
-
-class Wide_layer(Layer):
-    def __init__(self, feature_num):
-        super().__init__()
-        self.w0 = self.add_weight(name='w0', shape=(1,),
-                                  initializer=tf.zeros_initializer(), trainable=True)
-        self.w = self.add_weight(name='w', shape=(feature_num, 1),
-                                 initializer=init(), trainable=True, regularizer=l2(1e-4))
-
-    def call(self, inputs):
-        x = tf.matmul(inputs, self.w) + self.w0
-        return x
-
-
-class Deep_layer(Layer):
-    def __init__(self, hidden_units, output_dim, activation):
-        super().__init__()
-        self.hidden_layer = [Dense(i, activation=activation) for i in hidden_units]
-        # 输出层没有激活函数
-        self.output_layer = Dense(output_dim, activation=None)
-
-    def call(self, inputs):
-        x = inputs
-        for layer in self.hidden_layer:
-            x = layer(x)
-        output = self.output_layer(x)
-        return output
+from m0_layer import Line_layer, Deep_layer
 
 
 class WideDeep(Model):
@@ -57,7 +29,7 @@ class WideDeep(Model):
         for i, feat in enumerate(self.sparse_features):
             self.emb_layers['embed_layer' + str(i)] = Embedding(feat['one_hot_dim'], feat['emb_dim'])
 
-        self.wide = Wide_layer(feature_num=wide_feature_num)
+        self.wide = Line_layer(feature_num=wide_feature_num)
         self.deep = Deep_layer(hidden_units, output_dim, activation)
 
     def call(self, inputs):

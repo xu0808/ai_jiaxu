@@ -11,13 +11,13 @@ from tensorflow import random_normal_initializer as init
 class Line_layer(Layer):
     def __init__(self, feature_num):
         super().__init__()
-        self.w0 = self.add_weight(name='w0', shape=(1,),
-                                  initializer=tf.zeros_initializer(), trainable=True)
+        self.b = self.add_weight(name='b', shape=(1,),
+                                 initializer=tf.zeros_initializer(), trainable=True)
         self.w = self.add_weight(name='w', shape=(feature_num, 1),
                                  initializer=init(), trainable=True, regularizer=l2(1e-4))
 
     def call(self, inputs):
-        x = tf.matmul(inputs, self.w) + self.w0
+        x = tf.matmul(inputs, self.w) + self.b
         return x
 
 
