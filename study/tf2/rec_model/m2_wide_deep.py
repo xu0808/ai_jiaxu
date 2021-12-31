@@ -15,7 +15,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import Layer, Dense, Embedding
 from tensorflow.keras import Model
 
-from m0_layer import Line_layer, Deep_layer
+from m0_layer import Line_layer, Embed_Layer, Deep_layer
 
 
 class WideDeep(Model):
@@ -24,12 +24,11 @@ class WideDeep(Model):
         self.dense_features, self.sparse_features = features
         self.dense_dim = len(self.dense_features)
         self.sparse_dim = len(self.sparse_features)
-        self.emb_layers = {}
-        # 逐个类别特征初始化embedded层
-        for i, feat in enumerate(self.sparse_features):
-            self.emb_layers['embed_layer' + str(i)] = Embedding(feat['one_hot_dim'], feat['emb_dim'])
 
         self.wide = Line_layer(feature_num=wide_feature_num)
+
+        # 逐个类别特征初始化embedded层
+        self.emb_layers = Embed_Layer(self.sparse_features)
         self.deep = Deep_layer(hidden_units, output_dim, activation)
 
     def call(self, inputs):
@@ -46,8 +45,7 @@ class WideDeep(Model):
 
         # deep部分
         # 将类别特征从one hot dim转换成embed_dim
-        emb_layers = [self.emb_layers['embed_layer' + str(i)](sparse_inputs[:, i]) for i in range(self.sparse_dim)]
-        sparse_embed = tf.concat(emb_layers, axis=-1)
+        sparse_embed = self.emb_layers(sparse_inputs)
         deep_output = self.deep(sparse_embed)
 
         # 模型整体输出

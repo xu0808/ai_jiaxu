@@ -13,7 +13,7 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Layer, Dense, Embedding
 from tensorflow.keras import Model
-from m0_layer import Deep_layer
+from m0_layer import Embed_Layer, Deep_layer
 from m1_fm import FM_layer
 
 
@@ -23,10 +23,9 @@ class DeepFM(Model):
         self.dense_features, self.sparse_features = features
         self.dense_dim = len(self.dense_features)
         self.sparse_dim = len(self.sparse_features)
-        self.emb_layers = {}
+
         # 逐个类别特征初始化embedded层
-        for i, feat in enumerate(self.sparse_features):
-            self.emb_layers['embed_layer' + str(i)] = Embedding(feat['one_hot_dim'], feat['emb_dim'])
+        self.emb_layers = Embed_Layer(self.sparse_features)
 
         self.fm = FM_layer(k, w_reg, v_reg, f_n=self.dense_dim + emb_dim*self.sparse_dim)
         self.deep = Deep_layer(hidden_units, output_dim, activation)
@@ -38,8 +37,7 @@ class DeepFM(Model):
         sparse_inputs = inputs[:, self.dense_dim:]
 
         # 将类别特征从one hot dim转换成embed_dim
-        emb_layers = [self.emb_layers['embed_layer' + str(i)](sparse_inputs[:, i]) for i in range(self.sparse_dim)]
-        sparse_embed = tf.concat(emb_layers, axis=-1)
+        sparse_embed = self.emb_layers(sparse_inputs)
         # DeepFM两个部分共享输入(数值特征 + 类别特征embedding)
         x = tf.concat([dense_inputs, sparse_embed], axis=-1)
 

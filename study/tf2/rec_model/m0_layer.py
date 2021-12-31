@@ -21,6 +21,22 @@ class Line_layer(Layer):
         return x
 
 
+class Embed_Layer(Layer):
+    def __init__(self, sparse_features):
+        super().__init__()
+        self.sparse_dim = len(sparse_features)
+        self.emb_layers = {}
+        # 逐个类别特征初始化embedded层
+        for i, feat in enumerate(sparse_features):
+            self.emb_layers['embed_layer' + str(i)] = Embedding(feat['one_hot_dim'], feat['emb_dim'])
+
+    def call(self, sparse_inputs):
+        # 将类别特征从one hot dim转换成embed_dim
+        emb_layers = [self.emb_layers['embed_layer' + str(i)](sparse_inputs[:, i]) for i in range(self.sparse_dim)]
+        sparse_embed = tf.concat(emb_layers, axis=-1)
+        return sparse_embed
+
+
 class Deep_layer(Layer):
     def __init__(self, hidden_units, output_dim, activation):
         super().__init__()
