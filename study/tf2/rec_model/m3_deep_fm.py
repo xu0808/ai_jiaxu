@@ -2,6 +2,7 @@
 # coding: utf-8
 # DeepFM
 """
+Deep与FM结合的产物，也是Wide&Deep的改进版，只是将LR替换成了FM，提升了模型wide侧提取信息的能力。
 优点：
 1 两部分联合训练，无需加入人工特征，更易部署；
 2 结构简单，复杂度低，两部分共享输入，共享信息，可更精确的训练学习。
@@ -11,9 +12,8 @@
 """
 
 import tensorflow as tf
-from tensorflow.keras.layers import Layer, Dense, Embedding
 from tensorflow.keras import Model
-from m0_layer import Embed_Layer, Deep_layer
+from m0_layer import Embed_layer, Deep_layer
 from m1_fm import FM_layer
 
 
@@ -25,7 +25,7 @@ class DeepFM(Model):
         self.sparse_dim = len(self.sparse_features)
 
         # 逐个类别特征初始化embedded层
-        self.emb_layers = Embed_Layer(self.sparse_features)
+        self.emb_layers = Embed_layer(self.sparse_features)
 
         self.fm = FM_layer(k, w_reg, v_reg, f_n=self.dense_dim + emb_dim*self.sparse_dim)
         self.deep = Deep_layer(hidden_units, output_dim, activation)

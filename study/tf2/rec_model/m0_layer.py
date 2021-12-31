@@ -9,6 +9,7 @@ from tensorflow import random_normal_initializer as init
 
 
 class Line_layer(Layer):
+    """线性层"""
     def __init__(self, feature_num):
         super().__init__()
         self.b = self.add_weight(name='b', shape=(1,),
@@ -21,7 +22,8 @@ class Line_layer(Layer):
         return x
 
 
-class Embed_Layer(Layer):
+class Embed_layer(Layer):
+    """embedding层"""
     def __init__(self, sparse_features):
         super().__init__()
         self.sparse_dim = len(sparse_features)
@@ -38,6 +40,7 @@ class Embed_Layer(Layer):
 
 
 class Deep_layer(Layer):
+    """深度神经网络层"""
     def __init__(self, hidden_units, output_dim, activation):
         super().__init__()
         self.hidden_layer = [Dense(i, activation=activation) for i in hidden_units]
@@ -51,3 +54,14 @@ class Deep_layer(Layer):
         output = self.output_layer(x)
         return output
 
+
+class Res_layer(Layer):
+    """残差层(深度神经网络层输出 + 输入)"""
+    def __init__(self, hidden_units, output_dim, activation):
+        super(Res_layer, self).__init__()
+        self.deep = Deep_layer(hidden_units, output_dim, activation)
+
+    def call(self, inputs):
+        # deep输出
+        deep_output = self.deep(inputs)
+        return tf.nn.relu(inputs + deep_output)

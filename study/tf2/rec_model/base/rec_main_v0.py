@@ -6,6 +6,7 @@ import data_utils
 from m1_fm import FM_Model
 from m2_wide_deep import WideDeep
 from m3_deep_fm import DeepFM
+from m4_deep_crossing import DeepCrossing
 
 import tensorflow as tf
 from tensorflow.keras import optimizers
@@ -60,6 +61,20 @@ def init_deep_fm():
     return data_train, data_test, deep_fm_model
 
 
+def init_deep_cross():
+    """
+    3、DeepFM 模型
+    """
+    # 训练、测试集
+    emb_dim = 32
+    features, data_train, data_test = data_utils.emb_data(emb_dim=emb_dim)
+    hidden_units = [256, 256]
+    res_layer_num = 4
+    activation = 'relu'
+    deep_cross_model = DeepCrossing(features, emb_dim, hidden_units, res_layer_num, activation)
+    return data_train, data_test, deep_cross_model
+
+
 if __name__ == '__main__':
     # 1、模型
     # 1-1、FM
@@ -67,7 +82,9 @@ if __name__ == '__main__':
     # 1-2、Wide&Deep
     # (x_train, y_train), (x_test, y_test), model = init_wide_deep()
     # 1-3、Wide&Deep
-    (x_train, y_train), (x_test, y_test), model = init_deep_fm()
+    # (x_train, y_train), (x_test, y_test), model = init_deep_fm()
+    # 1-4、DeepCrossing
+    (x_train, y_train), (x_test, y_test), model = init_deep_cross()
 
     # 2、优化器
     optimizer = optimizers.SGD(0.01)

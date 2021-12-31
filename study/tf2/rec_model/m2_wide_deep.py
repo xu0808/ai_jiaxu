@@ -12,10 +12,8 @@
 """
 
 import tensorflow as tf
-from tensorflow.keras.layers import Layer, Dense, Embedding
 from tensorflow.keras import Model
-
-from m0_layer import Line_layer, Embed_Layer, Deep_layer
+from m0_layer import Line_layer, Embed_layer, Deep_layer
 
 
 class WideDeep(Model):
@@ -28,7 +26,7 @@ class WideDeep(Model):
         self.wide = Line_layer(feature_num=wide_feature_num)
 
         # 逐个类别特征初始化embedded层
-        self.emb_layers = Embed_Layer(self.sparse_features)
+        self.emb_layers = Embed_layer(self.sparse_features)
         self.deep = Deep_layer(hidden_units, output_dim, activation)
 
     def call(self, inputs):
