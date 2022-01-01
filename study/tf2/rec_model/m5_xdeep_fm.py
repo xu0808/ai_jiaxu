@@ -100,9 +100,10 @@ class xDeepFM(Model):
         cin_out = self.cin_layer(emb)
         # dnn输出
         # 实际输入(数值特征 + 类别特征embedding)
-        x = tf.concat([dense_inputs, sparse_embed], axis=-1)
-        deep_out = self.deep_layer(x)
+        deep_x = tf.concat([dense_inputs, sparse_embed], axis=-1)
+        deep_out = self.deep_layer(deep_x)
 
         # 最终输出
-        output = self.out_layer(linear_out + cin_out + deep_out)
+        x = tf.concat([linear_out, cin_out, deep_out], axis=-1)
+        output = self.out_layer(x)
         return tf.nn.sigmoid(output)
