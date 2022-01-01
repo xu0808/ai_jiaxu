@@ -105,7 +105,7 @@ if __name__ == '__main__':
     (x_train, y_train), (x_test, y_test), model = init_x_deep_fm()
 
     # 2、优化器
-    optimizer = optimizers.SGD(0.01)
+    optimizer = optimizers.SGD(0.01, clipnorm=1)
     # 3、keras标准模型训练
     # 合并后进行batch操作
     train_data = tf.data.Dataset.from_tensor_slices((x_train, y_train))

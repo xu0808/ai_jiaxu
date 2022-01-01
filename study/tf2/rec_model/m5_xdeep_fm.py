@@ -32,7 +32,7 @@ class CIN(Layer):
         # 每层的矩阵个数(包括第0层)
         self.field_nums = [sparse_dim] + self.cin_sizes
 
-        w_shapes = [(1, sparse_dim*self.field_nums[i], self.field_nums[i+1]) for i in range(len(self.cin_sizes))]
+        w_shapes = [(1, sparse_dim * self.field_nums[i], self.field_nums[i+1]) for i in range(len(self.cin_sizes))]
         self.cin_w_s = [self.add_weight(shape=shape, initializer=tf.initializers.glorot_uniform(),
                                         regularizer=l2(1e-5), trainable=True) for shape in w_shapes]
 
@@ -41,14 +41,14 @@ class CIN(Layer):
         res_list = [inputs]
         # 最后维切成k份，list: emb_dim * [-1, sparse_dim, 1]
         x_0 = tf.split(inputs, self.emb_dim, axis=-1)
-        for i, size in enumerate(self.field_nums[1:]):
+        for i, size in enumerate(self.cin_sizes):
             # list: emb_dim * [-1, field_nums[i], 1]
             x_i = tf.split(res_list[-1], self.emb_dim, axis=-1)
-            # list: k * [-1, field_num[0], field_num[i]]
+            # list: k * [-1, field_nums[0], field_nums[i]]
             x = tf.matmul(x_0, x_i, transpose_b=True)
-            # [emb_dim, -1, sparse_dim*field_nums[i]]
+            # [emb_dim, -1, sparse_dim * field_nums[i]]
             x = tf.reshape(x, shape=[self.emb_dim, -1, self.field_nums[0]*self.field_nums[i]])
-            # [ -1, emb_dim,sparse_dim*field_nums[i]]
+            # [ -1, emb_dim,sparse_dim * field_nums[i]]
             x = tf.transpose(x, [1, 0, 2])
             # [ emb_dim, -1, field_nums[i+1]]
             x = tf.nn.conv1d(input=x, filters=self.cin_w_s[i], stride=1, padding='VALID')
@@ -58,9 +58,9 @@ class CIN(Layer):
 
         # 去掉x_0
         res_list = res_list[1:]
-        # [ -1, sum(field_nums), emb_dim]
-        res = tf.concat(res_list, axis=1)
-        # [ -1, sum(field_nums)]
+        # [ -1, sum(cin_sizes), emb_dim]
+        res = tf.concat(res_list, axis=-1)
+        # [ -1, sum(cin_sizes)]
         output = tf.reduce_sum(res, axis=-1)
         return output
 
