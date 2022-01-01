@@ -57,7 +57,7 @@ Deep与FM结合的产物，也是Wide&Deep的改进版，只是将LR替换成了
 1. DCN不会考虑域的概念，属于同一特征的各个元素应同等对待；
 
 
-【推荐算法(五)——谷歌经典 Deep&Cross Network】
+【推荐算法(六)—— xDeepFM】
 xDeepFM是Wide&Deep的改进版，在此基础上添加了CIN层显式的构造有限阶特征组合。
 xDeepFM虽然名字跟DeepFM类似，但是两者相关性不大，DCN才是它的近亲。
 

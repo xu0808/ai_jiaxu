@@ -49,6 +49,7 @@ class DCN(Model):
         sparse_embed = self.emb_layers(sparse_inputs)
         # 实际输入(数值特征 + 类别特征embedding)
         x = tf.concat([dense_inputs, sparse_embed], axis=-1)
+        # tf.print('sparse_embed.shape = ', sparse_embed.shape)
 
         # 残差层输出层
         for res_layer in self.res_layers:

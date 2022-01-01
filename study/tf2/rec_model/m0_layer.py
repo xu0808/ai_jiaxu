@@ -3,7 +3,7 @@
 # 通用layer
 
 import tensorflow as tf
-from tensorflow.keras.layers import Layer, Dense, Embedding
+from tensorflow.keras.layers import Layer, Dense, Embedding, Dropout
 from tensorflow.keras.regularizers import l2
 
 
@@ -34,23 +34,26 @@ class Embed_layer(Layer):
 
     def call(self, sparse_inputs):
         # 将类别特征从one hot dim转换成embed_dim
-        emb_layers = [self.emb_layers['embed_layer' + str(i)](sparse_inputs[:, i]) for i in range(self.sparse_dim)]
-        sparse_embed = tf.concat(emb_layers, axis=-1)
+        embs = [self.emb_layers['embed_layer' + str(i)](sparse_inputs[:, i]) for i in range(self.sparse_dim)]
+        # tf.print('embs[0].shape = ', embs[0].shape)
+        sparse_embed = tf.concat(embs, axis=-1)
         return sparse_embed
 
 
 class Deep_layer(Layer):
     """深度神经网络层"""
-    def __init__(self, hidden_units, output_dim, activation):
+    def __init__(self, hidden_units, output_dim, activation, dropout=0.0):
         super().__init__()
         self.hidden_layer = [Dense(i, activation=activation) for i in hidden_units]
         # 输出层没有激活函数
         self.output_layer = Dense(output_dim, activation=None)
+        self.dropout = Dropout(dropout)
 
     def call(self, inputs):
         x = inputs
         for layer in self.hidden_layer:
             x = layer(x)
+        x = self.dropout(x)
         output = self.output_layer(x)
         return output
 
