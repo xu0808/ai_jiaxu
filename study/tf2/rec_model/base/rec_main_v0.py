@@ -6,7 +6,7 @@ import data_utils
 from m1_fm import FM_Model
 from m2_wide_deep import WideDeep
 from m3_deep_fm import DeepFM
-from m4_deep_crossing import DeepCrossing
+from m4_deep_crossing import DCN
 
 import tensorflow as tf
 from tensorflow.keras import optimizers
@@ -71,7 +71,7 @@ def init_deep_cross():
     hidden_units = [256, 256]
     res_layer_num = 4
     activation = 'relu'
-    deep_cross_model = DeepCrossing(features, emb_dim, hidden_units, res_layer_num, activation)
+    deep_cross_model = DCN(features, emb_dim, hidden_units, res_layer_num, activation)
     return data_train, data_test, deep_cross_model
 
 
