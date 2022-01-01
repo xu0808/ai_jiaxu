@@ -16,10 +16,15 @@
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Dense
+
 from m0_layer import Embed_layer, Res_layer
 
 
-class DeepCrossing(Model):
+class DCN(Model):
+    """
+    DCN-matrix也提出了一种串行拼接方式
+    就是将cross layer最后一层的输出作为deep layer 的输入，串行的拼接两部分。
+    """
     def __init__(self, features, emb_dim, hidden_units, res_layer_num, activation):
         super().__init__()
         self.dense_features, self.sparse_features = features

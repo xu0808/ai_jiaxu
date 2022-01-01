@@ -94,6 +94,7 @@ if __name__ == '__main__':
     train_data = train_data.batch(32).prefetch(tf.data.experimental.AUTOTUNE)
     model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
     model.fit(train_data, epochs=20)
+    print('train finish!')
 
     # 4、评估
     loss, auc = model.evaluate(x_test, y_test)

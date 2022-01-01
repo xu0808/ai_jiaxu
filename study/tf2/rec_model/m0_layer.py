@@ -5,17 +5,17 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Layer, Dense, Embedding
 from tensorflow.keras.regularizers import l2
-from tensorflow import random_normal_initializer as init
 
 
 class Line_layer(Layer):
     """线性层"""
     def __init__(self, feature_num):
         super().__init__()
-        self.b = self.add_weight(name='b', shape=(1,),
-                                 initializer=tf.zeros_initializer(), trainable=True)
-        self.w = self.add_weight(name='w', shape=(feature_num, 1),
-                                 initializer=init(), trainable=True, regularizer=l2(1e-4))
+        self.w = self.add_weight(name='w', shape=(feature_num, 1), initializer=tf.random_normal_initializer(),
+                                 regularizer=l2(1e-4), trainable=True)
+
+        self.b = self.add_weight(name='b', shape=(1,), initializer=tf.zeros_initializer(),
+                                 regularizer=l2(1e-4), trainable=True)
 
     def call(self, inputs):
         x = tf.matmul(inputs, self.w) + self.b
