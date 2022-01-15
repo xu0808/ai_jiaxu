@@ -79,4 +79,4 @@ if __name__ == "__main__":
     # 1、one_hot特征数据
     # one_hot_data()
     # 2、embedding特征数据
-    emb_data()
+    emb_data(is_w_d=True)

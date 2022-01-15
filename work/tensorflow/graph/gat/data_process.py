@@ -285,7 +285,7 @@ def preprocess_adj_bias(adj):
     indices = np.vstack(
         (adj.col, adj.row)).transpose()  # This is where I made a mistake, I used (adj.row, adj.col) instead
 
-    return tf.SparseTensor(indices=indices, values=adj.data, dense_shape=adj.shape)
+    return tf.SparseTensor(indices=indices, values=adj.x, dense_shape=adj.shape)
 
 
 if __name__ == "__main__":

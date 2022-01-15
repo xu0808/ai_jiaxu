@@ -1,0 +1,3 @@
+【Attention】
+1、推荐系统中的attention机制
+https://zhuanlan.zhihu.com/p/269610432
