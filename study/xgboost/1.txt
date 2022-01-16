@@ -53,3 +53,10 @@ https://zhuanlan.zhihu.com/p/162001079
 
 【树家族集成篇--xgboost篇（基于spark）】
 https://blog.csdn.net/weixin_39732131/article/details/119281580
+
+
+【在pyspark上使用xgboost】
+https://blog.csdn.net/weixin_39840982/article/details/109492472
+
+【xgboost的分布式版本(pyspark)使用测试】
+https://zhuanlan.zhihu.com/p/139722007
